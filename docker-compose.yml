@@ -9,7 +9,7 @@ services:
     build: .
     image: keskne
     depends_on:
-      - mbta_webserver
+      - api
     ports:
       - "80:80"
       - "443:443"
@@ -17,7 +17,7 @@ services:
       - keskne_logs:/var/log/nginx:rw
       - /etc/letsencrypt:/app/certs:ro
 
-  # MBTA
+  # ===== MBTA =====
   db:
     image: insh2102mbta/db:latest
     environment:
@@ -37,10 +37,3 @@ services:
       - db
     volumes:
       - mbta_logs:/var/log/gunicorn:rw
-
-  mbta_webserver:
-    image: insh2102mbta/webserver:latest
-    depends_on:
-      - api
-    volumes:
-      - mbta_logs:/var/log/nginx:rw
