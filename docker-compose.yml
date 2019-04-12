@@ -12,6 +12,7 @@ services:
       - mbta_webserver
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - keskne_logs:/var/log/nginx:rw
       - /etc/letsencrypt:/app/certs:ro
