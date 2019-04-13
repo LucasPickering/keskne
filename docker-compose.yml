@@ -9,7 +9,7 @@ services:
     build: .
     image: keskne
     depends_on:
-      - mbta_api
+      - mbta-api
     ports:
       - "80:80"
       - "443:443"
@@ -18,7 +18,7 @@ services:
       - /etc/letsencrypt:/app/certs:ro
 
   # ===== MBTA =====
-  mbta_db:
+  mbta-db:
     image: insh2102mbta/db:latest
     environment:
       - POSTGRES_DB=mbta
@@ -26,14 +26,14 @@ services:
       - POSTGRES_PASSWORD=root
       - PGDATA=/app/postgres
 
-  mbta_api:
+  # WARNING: Django rejects all requests if your hostname has an underscore!
+  mbta-api:
     image: insh2102mbta/api:latest
     command: sh -c "dockerize -wait tcp://$${DB_HOSTNAME}:5432 -timeout 30s && ./manage.py migrate && gunicorn mbta.wsgi -b :8000 --log-file /var/log/gunicorn/gunicorn.log --access-logfile /var/log/gunicorn/gunicorn_access.log"
     environment:
-      - DJANGO_SETTINGS_MODULE=mbta.settings.prod
-      - DB_HOSTNAME=mbta_db
+      - DB_HOSTNAME=mbta-db
       - DB_PASSWORD=root
     depends_on:
-      - mbta_db
+      - mbta-db
     volumes:
       - mbta_logs:/var/log/gunicorn:rw
