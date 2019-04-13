@@ -1,25 +1,49 @@
 version: "3"
 
 volumes:
-  keskne_logs:
-  mbta_logs:
+  keskne-logs:
+  mbta-logs:
+  wordpress-db:
 
 services:
   revproxy:
     build: .
     image: keskne
+    restart: always
     depends_on:
       - mbta-api
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - keskne_logs:/var/log/nginx:rw
+      - keskne-logs:/var/log/nginx:rw
       - /etc/letsencrypt:/app/certs:ro
+
+  # ===== Wordpress =====
+  wordpress-db:
+    image: mysql:5
+    restart: always
+    volumes:
+      - wordpress-db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+
+  wordpress:
+    image: wordpress:latest
+    restart: always
+    depends_on:
+      - wordpress-db
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: root
 
   # ===== MBTA =====
   mbta-db:
     image: insh2102mbta/db:latest
+    restart: always
     environment:
       - POSTGRES_DB=mbta
       - POSTGRES_USER=root
@@ -29,6 +53,7 @@ services:
   # WARNING: Django rejects all requests if your hostname has an underscore!
   mbta-api:
     image: insh2102mbta/api:latest
+    restart: always
     command: sh -c "dockerize -wait tcp://$${DB_HOSTNAME}:5432 -timeout 30s && ./manage.py migrate && gunicorn mbta.wsgi -b :8000 --log-file /var/log/gunicorn/gunicorn.log --access-logfile /var/log/gunicorn/gunicorn_access.log"
     environment:
       - DB_HOSTNAME=mbta-db
@@ -36,4 +61,4 @@ services:
     depends_on:
       - mbta-db
     volumes:
-      - mbta_logs:/var/log/gunicorn:rw
+      - mbta-logs:/var/log/gunicorn:rw
