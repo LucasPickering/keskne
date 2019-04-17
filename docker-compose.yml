@@ -3,7 +3,6 @@ version: "3"
 volumes:
   keskne-logs:
   mbta-logs:
-  wordpress-db:
 
 services:
   revproxy:
@@ -23,11 +22,11 @@ services:
   wordpress-db:
     image: mysql:5
     restart: always
-    volumes:
-      - wordpress-db:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wordpress
+    volumes:
+      - /var/lp.me/wordpress-db:/var/lib/mysql
 
   wordpress:
     image: wordpress:latest
@@ -39,6 +38,8 @@ services:
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: root
+    volumes:
+      - /var/lp.me/wordpress:/var/www/html:rw
 
   # ===== MBTA =====
   mbta-db:
