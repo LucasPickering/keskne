@@ -2,6 +2,7 @@ version: "3"
 
 volumes:
   keskne-logs:
+  mbta-static:
   mbta-logs:
 
 services:
@@ -10,13 +11,16 @@ services:
     image: keskne
     restart: always
     depends_on:
+      - wordpress
       - mbta-api
+      - mbta-static
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - keskne-logs:/var/log/nginx:rw
       - /etc/letsencrypt:/app/certs:ro
+      - keskne-logs:/var/log/nginx:rw
+      - mbta-static:/app/mbta:ro
 
   # ===== Wordpress =====
   wordpress-db:
@@ -63,3 +67,8 @@ services:
       - mbta-db
     volumes:
       - mbta-logs:/var/log/gunicorn:rw
+
+  mbta-static:
+    image: insh2102mbta/static:latest
+    volumes:
+      - mbta-static:/app/static:rw
