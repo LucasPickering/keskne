@@ -4,19 +4,42 @@ Reverse proxy server for hosting multiple sites on one instance.
 
 ## Server Setup
 
-### Generating certs
-
-[Go here](https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx)
-
 ### Docker-machine Setup
 
 [Go here](https://www.digitalocean.com/community/tutorials/how-to-provision-and-manage-remote-docker-hosts-with-docker-machine-on-ubuntu-16-04#step-3-%E2%80%94-provisioning-a-dockerized-host-using-docker-machine)
 
-## Updating Servers
+This machine will run all the containers on it. After setup, you can use `docker-machine ssh <name>` for the next section.
+
+### Generating certs
+
+This will generate a wildcard cert, that works on all first-level subdomains.
+
+[Go here](https://cloud.digitalocean.com/settings/api/tokens) to get another DO API token for the server. Then run this stuff:
 
 ```
-docker-compose pull
+apt-get update
+apt-get install software-properties-common
+add-apt-repository universe
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install certbot python3-certbot-dns-digitalocean
+echo "dns_digitalocean_token = <token>" > ~/do.ini
+chmod 600 ~/do.ini
+certbot -a dns-digitalocean -i nginx -d "*.<domain>" -d <domain> --server https://acme-v02.api.letsencrypt.org/directory --dns-digitalocean-credentials ~/do.ini certonly
+```
+
+Make sure to use the
+Needed for HTTPS. This installs the certsInstall to `/app/certs/live/lucaspickering.me/`
+
+[Instructions from here](https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx)
+
+## Updating Servers
+
+Set the server as active for `docker-machine`, then:
+
+```
+docker-compose pull # Will fail for revproxy
 docker-compose stop
-docker-compose volume prune -f # Wips out old static files
+docker-compose volume prune -f # Wipes out old static files
 docker-compose up -d
 ```
