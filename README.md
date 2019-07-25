@@ -33,13 +33,30 @@ Needed for HTTPS. This installs the certsInstall to `/app/certs/live/lucaspicker
 
 [Instructions from here](https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx)
 
-## Updating Servers
+## Updating
 
-Set the server as active for `docker-machine`, then:
+Before running any of these steps, you should set your server as the active docker machine.
+
+### Keskne
+
+To update the Keskne revproxy, run:
 
 ```
-docker-compose pull # Will fail for revproxy
-docker-compose stop
-docker-compose volume prune -f # Wipes out old static files
-docker-compose up -d
+./build_keskne.sh
+```
+
+### Updating Services
+
+To pull in updates for all services, run:
+
+**(The revproxy pull will always fail)**
+
+```
+./deploy.sh
+```
+
+To only pull new images for certain services, run:
+
+```
+./deploy.sh <service> ...
 ```

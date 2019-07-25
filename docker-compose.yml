@@ -47,7 +47,7 @@ services:
 
   # ===== MBTA =====
   mbta-db:
-    image: lucaspickering/krahv-db:latest
+    image: lucaspickering/mbta-db:latest
     restart: always
     environment:
       - POSTGRES_DB=mbta
@@ -57,7 +57,7 @@ services:
 
   # WARNING: Django rejects all requests if your hostname has an underscore!
   mbta-api:
-    image: lucaspickering/krahv-api:latest
+    image: lucaspickering/mbta-api:latest
     restart: always
     environment:
       - DB_HOSTNAME=mbta-db
@@ -68,6 +68,6 @@ services:
       - mbta-logs:/var/log/gunicorn:rw
 
   mbta-static:
-    image: lucaspickering/krahv-static:latest
+    image: lucaspickering/mbta-static:latest
     volumes:
       - mbta-static:/app/static:rw
