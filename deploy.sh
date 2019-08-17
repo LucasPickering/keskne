@@ -10,5 +10,5 @@ fi
 docker-compose pull $@
 docker-compose down
 # Delete old static files
-docker volume rm mbta-static
+docker volume ls -q | grep '^keskne_.*-static$' | xargs docker volume rm
 docker-compose up -d

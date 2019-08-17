@@ -28,8 +28,7 @@ chmod 600 ~/do.ini
 certbot -a dns-digitalocean -i nginx -d "*.<domain>" -d <domain> --server https://acme-v02.api.letsencrypt.org/directory --dns-digitalocean-credentials ~/do.ini certonly
 ```
 
-Make sure to use the
-Needed for HTTPS. This installs the certsInstall to `/app/certs/live/lucaspickering.me/`
+This installs the certs to `/app/certs/live/lucaspickering.me/`
 
 [Instructions from here](https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx)
 
@@ -39,17 +38,17 @@ Before running any of these steps, you should set your server as the active dock
 
 ### Keskne
 
-To update the Keskne revproxy, run:
+To update the core Keskne images, run:
 
 ```
-./build_keskne.sh
+./build.sh
 ```
 
 ### Updating Services
 
 To pull in updates for all services, run:
 
-**(The revproxy pull will always fail)**
+**(The core image pulls will always fail)**
 
 ```
 ./deploy.sh
