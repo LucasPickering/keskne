@@ -36,28 +36,22 @@ This installs the certs to `/app/certs/live/lucaspickering.me/`
 
 ## Updating
 
-Before running any of these steps, you should set your server as the active docker machine.
-
 ### Keskne
 
 To update the core Keskne images, run:
 
-```
-./build.sh
+```sh
+./build_push.sh [service] ...
 ```
 
 ### Updating Services
 
+Before running these steps, you should set your server as the active docker machine.
+
 To pull in updates for all services, run:
 
-**(The core image pulls will always fail)**
-
 ```sh
-./deploy.sh
+./deploy.sh [service] ...
 ```
 
-To only pull new images for certain services, run:
-
-```sh
-./deploy.sh <service> ...
-```
+This will still recreate containers for all images.

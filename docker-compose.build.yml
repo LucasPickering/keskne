@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  revproxy:
+    build: ./revproxy
+    image: lucaspickering/keskne-revproxy
+
+  postgres:
+    build: ./postgres
+    image: lucaspickering/keskne-postgres
