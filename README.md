@@ -14,7 +14,9 @@ This machine will run all the containers on it. After setup, you can use `docker
 
 This will generate a wildcard cert, that works on all first-level subdomains.
 
-[Go here](https://cloud.digitalocean.com/settings/api/tokens) to get another DO API token for the server. Then run this stuff:
+[Go here](https://cloud.digitalocean.com/settings/api/tokens) to get another DO API token for the server. Then run this stuff on the server:
+
+(TODO: Make this a friendlier script)
 
 ```
 apt-get update
@@ -25,7 +27,7 @@ apt-get update
 apt-get install certbot python3-certbot-dns-digitalocean
 echo "dns_digitalocean_token = <token>" > ~/do.ini
 chmod 600 ~/do.ini
-certbot -a dns-digitalocean -i nginx -d "*.<domain>" -d <domain> --server https://acme-v02.api.letsencrypt.org/directory --dns-digitalocean-credentials ~/do.ini certonly
+DOMAIN=<domain> certbot -a dns-digitalocean -i nginx -d "*.$DOMAIN" -d $DOMAIN --server https://acme-v02.api.letsencrypt.org/directory --dns-digitalocean-credentials ~/do.ini certonly
 ```
 
 This installs the certs to `/app/certs/live/lucaspickering.me/`
@@ -50,12 +52,12 @@ To pull in updates for all services, run:
 
 **(The core image pulls will always fail)**
 
-```
+```sh
 ./deploy.sh
 ```
 
 To only pull new images for certain services, run:
 
-```
+```sh
 ./deploy.sh <service> ...
 ```

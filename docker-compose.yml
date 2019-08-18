@@ -88,10 +88,15 @@ services:
       - mbta-static:/app/static:rw
 
   # ===== RPS =====
+  rps-redis:
+    image: redis:5-alpine
+    restart: always
+
   rps-api:
     image: lucaspickering/rps-api:latest
     restart: always
     environment:
+      - RPS_REDIS_HOST=rps-redis:6379
       - RPS_DB_HOST=postgres
       - RPS_DB_NAME=${RPS_DB}
       - RPS_DB_USER=${RPS_DB}
@@ -100,7 +105,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - rps-logs:/var/log/gunicorn:rw
+      - rps-logs:/var/log/daphne:rw
 
   rps-static:
     image: lucaspickering/rps-static:latest

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # Make sure there's a docker host set
 docker-machine active
 if [ $? -ne 0 ]; then
