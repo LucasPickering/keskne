@@ -102,6 +102,7 @@ services:
       - RPS_SECRET_KEY=rps # TODO
     depends_on:
       - postgres
+      - rps-redis
     volumes:
       - rps-logs:/var/log/daphne:rw
     deploy:
