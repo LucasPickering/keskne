@@ -1,10 +1,20 @@
-version: "3"
+version: "3.3"
 
 volumes:
   keskne-postgres:
   keskne-logs:
   mbta-logs:
   rps-logs:
+
+secrets:
+  keskne_mbta_db_password:
+    external: true
+  keskne_mbta_secret_key:
+    external: true
+  keskne_rps_db_password:
+    external: true
+  keskne_rps_secret_key:
+    external: true
 
 services:
   # ===== Keskne =====
@@ -28,11 +38,13 @@ services:
     image: lucaspickering/keskne-postgres:latest
     environment:
       - POSTGRES_USER=root
-      - POSTGRES_PASSWORD
       - MBTA_DB=mbta
-      - MBTA_DB_PASSWORD=mbta
+      - MBTA_DB_PASSWORD_FILE="/run/secrets/keskne_mbta_db_password"
       - RPS_DB=rps
-      - RPS_DB_PASSWORD=rps
+      - RPS_DB_PASSWORD="/run/secrets/keskne_mbta_db_password"
+    secrets:
+      - keskne_mbta_db_password
+      - keskne_rps_db_password
     volumes:
       - keskne-postgres:/var/lib/postgresql/data:rw
     deploy:
@@ -74,15 +86,19 @@ services:
       - MBTA_DB_HOST=postgres
       - MBTA_DB_NAME=mbta
       - MBTA_DB_USER=mbta
-      - MBTA_DB_PASSWORD=mbta # TODO
-      - MBTA_SECRET_KEY=mbta # TODO
+      - MBTA_DB_PASSWORD_FILE=/run/secrets/keskne_mbta_db_password
+      - MBTA_SECRET_KEY_FILE=/run/secrets/keskne_mbta_secret_key
     depends_on:
       - postgres
+    secrets:
+      - keskne_mbta_db_password
+      - keskne_mbta_secret_key
     volumes:
       - mbta-logs:/var/log/gunicorn:rw
     deploy:
       restart_policy:
         condition: any
+        delay: 10s
 
   # ===== RPS =====
   rps-redis:
@@ -98,13 +114,17 @@ services:
       - RPS_DB_HOST=postgres
       - RPS_DB_NAME=rps
       - RPS_DB_USER=rps
-      - RPS_DB_PASSWORD=rps # TODO
-      - RPS_SECRET_KEY=rps # TODO
+      - RPS_DB_PASSWORD_FILE=/run/secrets/keskne_rps_db_password
+      - RPS_SECRET_KEY_FILE=/run/secrets/keskne_rps_secret_key
     depends_on:
       - postgres
       - rps-redis
+    secrets:
+      - keskne_rps_db_password
+      - keskne_rps_secret_key
     volumes:
       - rps-logs:/var/log/daphne:rw
     deploy:
       restart_policy:
         condition: any
+        delay: 10s
