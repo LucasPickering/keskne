@@ -9,8 +9,5 @@ fi
 
 set -ex
 
-docker-compose pull $@
-docker-compose down
-# Delete old static files
-docker volume ls -q | grep '^keskne_.*-static$' | xargs docker volume rm
-docker-compose up -d
+docker-compose -f docker-stack.yml pull $@
+docker stack deploy -c docker-stack.yml keskne

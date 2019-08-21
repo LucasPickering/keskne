@@ -1,59 +1,58 @@
 version: "3"
 
 volumes:
-  keskne-logs:
   keskne-postgres:
-  mbta-static:
+  keskne-logs:
   mbta-logs:
-  rps-static:
   rps-logs:
 
 services:
   # ===== Keskne =====
   revproxy:
     image: lucaspickering/keskne-revproxy:latest
-    restart: always
     depends_on:
       - wordpress
       - mbta-api
-      - mbta-static
       - rps-api
-      - rps-static
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /etc/letsencrypt:/app/certs:ro
       - keskne-logs:/var/log/nginx:rw
-      - mbta-static:/app/mbta:ro
-      - rps-static:/app/rps:ro
+    deploy:
+      restart_policy:
+        condition: any
 
   postgres:
     image: lucaspickering/keskne-postgres:latest
-    restart: always
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD
-      - MBTA_DB
-      - MBTA_DB_PASSWORD
-      - RPS_DB
-      - RPS_DB_PASSWORD
+      - MBTA_DB=mbta
+      - MBTA_DB_PASSWORD=mbta
+      - RPS_DB=rps
+      - RPS_DB_PASSWORD=rps
     volumes:
       - keskne-postgres:/var/lib/postgresql/data:rw
+    deploy:
+      restart_policy:
+        condition: any
 
   # ===== Wordpress =====
   wordpress-db:
     image: mysql:5
-    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wordpress
     volumes:
       - /var/lp.me/wordpress-db:/var/lib/mysql
+    deploy:
+      restart_policy:
+        condition: any
 
   wordpress:
     image: wordpress:latest
-    restart: always
     depends_on:
       - wordpress-db
     environment:
@@ -63,49 +62,48 @@ services:
       WORDPRESS_DB_PASSWORD: root
     volumes:
       - /var/lp.me/wordpress:/var/www/html:rw
+    deploy:
+      restart_policy:
+        condition: any
 
   # ===== MBTA =====
   # WARNING: Django rejects all requests if your hostname has an underscore!
   mbta-api:
     image: lucaspickering/mbta-api:latest
-    restart: always
     environment:
       - MBTA_DB_HOST=postgres
-      - MBTA_DB_NAME=${MBTA_DB}
-      - MBTA_DB_USER=${MBTA_DB}
-      - MBTA_DB_PASSWORD
-      - MBTA_SECRET_KEY
+      - MBTA_DB_NAME=mbta
+      - MBTA_DB_USER=mbta
+      - MBTA_DB_PASSWORD=mbta # TODO
+      - MBTA_SECRET_KEY=mbta # TODO
     depends_on:
       - postgres
     volumes:
       - mbta-logs:/var/log/gunicorn:rw
-
-  mbta-static:
-    image: lucaspickering/mbta-static:latest
-    volumes:
-      - mbta-static:/app/static:rw
+    deploy:
+      restart_policy:
+        condition: any
 
   # ===== RPS =====
   rps-redis:
     image: redis:5-alpine
-    restart: always
+    deploy:
+      restart_policy:
+        condition: any
 
   rps-api:
     image: lucaspickering/rps-api:latest
-    restart: always
     environment:
       - RPS_REDIS_HOST=rps-redis:6379
       - RPS_DB_HOST=postgres
-      - RPS_DB_NAME=${RPS_DB}
-      - RPS_DB_USER=${RPS_DB}
-      - RPS_DB_PASSWORD
-      - RPS_SECRET_KEY
+      - RPS_DB_NAME=rps
+      - RPS_DB_USER=rps
+      - RPS_DB_PASSWORD=rps # TODO
+      - RPS_SECRET_KEY=rps # TODO
     depends_on:
       - postgres
     volumes:
       - rps-logs:/var/log/daphne:rw
-
-  rps-static:
-    image: lucaspickering/rps-static:latest
-    volumes:
-      - rps-static:/app/static:rw
+    deploy:
+      restart_policy:
+        condition: any
