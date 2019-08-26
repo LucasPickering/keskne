@@ -1,0 +1,8 @@
+language: minimal
+services:
+  - docker
+branches:
+  only:
+    - master
+script:
+  - ./travis_build_push.sh
