@@ -15,6 +15,10 @@ secrets:
     external: true
   keskne_rps_secret_key:
     external: true
+  keskne_rps_email_username:
+    external: true
+  keskne_rps_email_password:
+    external: true
 
 services:
   # ===== Keskne =====
@@ -116,6 +120,8 @@ services:
       - RPS_DB_USER=rps
       - RPS_DB_PASSWORD_FILE=/run/secrets/keskne_rps_db_password
       - RPS_SECRET_KEY_FILE=/run/secrets/keskne_rps_secret_key
+      - RPS_EMAIL_USERNAME=/run/secrets/keskne_rps_email_username
+      - RPS_EMAIL_PASSWORD=/run/secrets/keskne_rps_email_password
     depends_on:
       - postgres
       - rps-redis

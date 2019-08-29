@@ -42,6 +42,14 @@ This installs the certs to `/app/certs/live/lucaspickering.me/`
 
 [Instructions from here](https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx)
 
+### Adding Secrets
+
+All the secrets are managed through Docker secrets. You can look at `docker-stack.yml` for the list of secrets you need to populated. Use this command:
+
+```sh
+echo <secret_value> | docker secret create <secret_name> -
+```
+
 ## Updating
 
 ### Keskne
