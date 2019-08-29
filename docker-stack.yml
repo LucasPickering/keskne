@@ -43,9 +43,7 @@ services:
     environment:
       - POSTGRES_USER=root
       - MBTA_DB=mbta
-      - MBTA_DB_PASSWORD_FILE="/run/secrets/keskne_mbta_db_password"
       - RPS_DB=rps
-      - RPS_DB_PASSWORD="/run/secrets/keskne_mbta_db_password"
     secrets:
       - keskne_mbta_db_password
       - keskne_rps_db_password
@@ -90,8 +88,6 @@ services:
       - MBTA_DB_HOST=postgres
       - MBTA_DB_NAME=mbta
       - MBTA_DB_USER=mbta
-      - MBTA_DB_PASSWORD_FILE=/run/secrets/keskne_mbta_db_password
-      - MBTA_SECRET_KEY_FILE=/run/secrets/keskne_mbta_secret_key
     depends_on:
       - postgres
     secrets:
@@ -118,16 +114,14 @@ services:
       - RPS_DB_HOST=postgres
       - RPS_DB_NAME=rps
       - RPS_DB_USER=rps
-      - RPS_DB_PASSWORD_FILE=/run/secrets/keskne_rps_db_password
-      - RPS_SECRET_KEY_FILE=/run/secrets/keskne_rps_secret_key
-      - RPS_EMAIL_USERNAME=/run/secrets/keskne_rps_email_username
-      - RPS_EMAIL_PASSWORD=/run/secrets/keskne_rps_email_password
     depends_on:
       - postgres
       - rps-redis
     secrets:
       - keskne_rps_db_password
       - keskne_rps_secret_key
+      - keskne_rps_email_username
+      - keskne_rps_email_password
     volumes:
       - rps-logs:/var/log/daphne:rw
     deploy:
