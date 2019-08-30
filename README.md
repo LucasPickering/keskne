@@ -50,11 +50,13 @@ All the secrets are managed through Docker secrets. You can look at `docker-stac
 echo <secret_value> | docker secret create <secret_name> -
 ```
 
+Make sure to clean out your shell history after running those.
+
 ## Updating
 
 ### Keskne
 
-`keskne-revproxy` is built with all other service's static assets in the image. If any service gets new static assets, you'll have to rebuild `keskne-revproxy`. If you need to do that, or rebuild any other core Keskne images, use:
+`keskne-revproxy` is built from the official nginx-amplify image. Unfortunately there's no official Docker repository for that image, so we have to build it ourselves from the git repo. Then, all the service's static assets are built into the nginx image. If any service gets new static assets, you'll have to rebuild `keskne-revproxy`. If you need to do that, or rebuild any other core Keskne images, use:
 
 ```sh
 ./build_push.sh [service] ... # If no services are specified, it rebuilds all

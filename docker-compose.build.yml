@@ -1,6 +1,10 @@
 version: "3"
 
 services:
+  nginx-amplify:
+    build: https://github.com/nginxinc/docker-nginx-amplify.git
+    image: lucaspickering/nginx-amplify
+
   revproxy:
     build: ./revproxy
     image: lucaspickering/keskne-revproxy

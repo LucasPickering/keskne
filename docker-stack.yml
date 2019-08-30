@@ -7,6 +7,8 @@ volumes:
   rps-logs:
 
 secrets:
+  keskne_revproxy_amplify_api_key:
+    external: true
   keskne_mbta_db_password:
     external: true
   keskne_mbta_secret_key:
@@ -31,6 +33,10 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - AMPLIFY_IMAGENAME=lucaspickering.me
+    secrets:
+      - keskne_revproxy_amplify_api_key
     volumes:
       - /etc/letsencrypt:/app/certs:ro
       - keskne-logs:/var/log/nginx:rw
