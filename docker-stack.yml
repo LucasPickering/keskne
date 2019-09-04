@@ -4,7 +4,9 @@ volumes:
   keskne-postgres:
   keskne-logs:
   mbta-logs:
+  mbta-static:
   rps-logs:
+  rps-static:
 
 secrets:
   keskne_revproxy_amplify_api_key:
@@ -40,6 +42,8 @@ services:
     volumes:
       - /etc/letsencrypt:/app/certs:ro
       - keskne-logs:/var/log/nginx:rw
+      - mbta-static:/app/mbta:ro
+      - rps-static:/app/rps:ro
     deploy:
       restart_policy:
         condition: any
@@ -106,6 +110,13 @@ services:
         condition: any
         delay: 10s
 
+  mbta-static:
+    image: lucaspickering/mbta-static:latest
+    volumes:
+      - mbta-static:/app/mbta:rw
+    # We have to do this to make sure changes in the image get picked up
+    command: mv /app/static /app/mbta
+
   # ===== RPS =====
   rps-redis:
     image: redis:5-alpine
@@ -134,3 +145,10 @@ services:
       restart_policy:
         condition: any
         delay: 10s
+
+  rps-static:
+    image: lucaspickering/rps-static:latest
+    volumes:
+      - rps-static:/app/rps:rw
+    # We have to do this to make sure changes in the image get picked up
+    command: mv /app/static /app/rps
