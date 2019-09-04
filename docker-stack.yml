@@ -115,7 +115,7 @@ services:
     volumes:
       - mbta-static:/app/mbta:rw
     # We have to do this to make sure changes in the image get picked up
-    command: mv /app/static /app/mbta
+    command: sh -c "rm -rf /app/mbta/* && cp -r /app/static/* /app/mbta"
 
   # ===== RPS =====
   rps-redis:
@@ -151,4 +151,4 @@ services:
     volumes:
       - rps-static:/app/rps:rw
     # We have to do this to make sure changes in the image get picked up
-    command: mv /app/static /app/rps
+    command: sh -c "rm -rf /app/rps/* && cp -r /app/static/* /app/rps"
