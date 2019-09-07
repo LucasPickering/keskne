@@ -135,6 +135,8 @@ services:
   rps-api:
     image: lucaspickering/rps-api:latest
     environment:
+      - RPS_HOSTNAME=rps.lucaspickering.me
+      - RPS_LOGGING_DIR=/var/log/rps
       - RPS_REDIS_HOST=rps-redis:6379
       - RPS_DB_HOST=postgres
       - RPS_DB_NAME=rps
@@ -148,7 +150,7 @@ services:
       - keskne_rps_email_username
       - keskne_rps_email_password
     volumes:
-      - rps-logs:/var/log/daphne:rw
+      - rps-logs:/var/log/rps:rw
     deploy:
       restart_policy:
         condition: any
