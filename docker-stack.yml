@@ -116,6 +116,9 @@ services:
       - mbta-static:/app/mbta:rw
     # We have to do this to make sure changes in the image get picked up
     command: sh -c "rm -rf /app/mbta/* && cp -r /app/static/* /app/mbta"
+    deploy:
+      restart_policy:
+        condition: none
 
   # ===== RPS =====
   rps-redis:
@@ -152,3 +155,6 @@ services:
       - rps-static:/app/rps:rw
     # We have to do this to make sure changes in the image get picked up
     command: sh -c "rm -rf /app/rps/* && cp -r /app/static/* /app/rps"
+    deploy:
+      restart_policy:
+        condition: none
