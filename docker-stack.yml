@@ -1,11 +1,7 @@
 version: "3.3"
 
 volumes:
-  keskne-postgres:
-  keskne-logs:
-  mbta-logs:
   mbta-static:
-  rps-logs:
   rps-static:
 
 secrets:
@@ -46,7 +42,7 @@ services:
       - keskne_revproxy_amplify_api_key
     volumes:
       - /etc/letsencrypt:/app/certs:ro
-      - keskne-logs:/var/log/nginx:rw
+      - /var/log/keskne/revproxy:/var/log/nginx:rw
       - mbta-static:/app/mbta:ro
       - rps-static:/app/rps:ro
     deploy:
@@ -63,7 +59,7 @@ services:
       - keskne_mbta_db_password
       - keskne_rps_db_password
     volumes:
-      - keskne-postgres:/var/lib/postgresql/data:rw
+      - /var/keskne/postgres:/var/lib/postgresql/data:rw
     deploy:
       restart_policy:
         condition: any
@@ -75,7 +71,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wordpress
     volumes:
-      - /var/lp.me/wordpress-db:/var/lib/mysql
+      - /var/keskne/wordpress-db:/var/lib/mysql
     deploy:
       restart_policy:
         condition: any
@@ -90,7 +86,7 @@ services:
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: root
     volumes:
-      - /var/lp.me/wordpress:/var/www/html:rw
+      - /var/keskne/wordpress:/var/www/html:rw
     deploy:
       restart_policy:
         condition: any
@@ -109,7 +105,7 @@ services:
       - keskne_mbta_db_password
       - keskne_mbta_secret_key
     volumes:
-      - mbta-logs:/var/log/gunicorn:rw
+      - /var/log/keskne/mbta:/var/log/gunicorn:rw
     deploy:
       restart_policy:
         condition: any
@@ -150,7 +146,7 @@ services:
       - keskne_rps_email_username
       - keskne_rps_email_password
     volumes:
-      - rps-logs:/var/log/rps:rw
+      - /var/log/keskne/rps:/var/log/rps:rw
     deploy:
       restart_policy:
         condition: any
