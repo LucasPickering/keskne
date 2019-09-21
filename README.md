@@ -70,10 +70,10 @@ psql <db> < backups/<db>.bak
 
 ### Keskne
 
-`keskne-revproxy` is built from the official nginx-amplify image. Unfortunately there's no official Docker repository for that image, so we have to build it ourselves from the git repo. Then, all the service's static assets are built into the nginx image. If any service gets new static assets, you'll have to rebuild `keskne-revproxy`. If you need to do that, or rebuild any other core Keskne images, use:
+`keskne-revproxy` is built from the official nginx-amplify image. Unfortunately there's no official Docker repository for that image, so we have to build it ourselves from the git repo. If you change any configuration and need to rebuild a core image:
 
 ```sh
-./build_push.sh [service] ... # If no services are specified, it rebuilds all
+./build_push.sh [service] ... # If no services are specified, it rebuilds/pushes all
 ```
 
 ### Updating Services
