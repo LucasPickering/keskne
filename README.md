@@ -44,13 +44,27 @@ This installs the certs to `/app/certs/live/lucaspickering.me/`
 
 ### Adding Secrets
 
-All the secrets are managed through Docker secrets. You can look at `docker-stack.yml` for the list of secrets you need to populated. Use this command:
+All the secrets are managed through Docker secrets. You can look at `docker-stack.yml` for the list of secrets you need to populate. Use this command:
 
 ```sh
 echo <secret_value> | docker secret create <secret_name> -
 ```
 
 Make sure to clean out your shell history after running those.
+
+### Database Backup/Restore
+
+Certain DBs under postgres get backed up automatically every night. To add another DB to the backup list, see `postgres/backup.sh`.
+
+To restore the DB, shell into the postgres container, and run:
+
+```sh
+cd /var/lib/postgresql
+s3cmd get s3://$S3_BUCKET/backups.tar.gz
+tar xzvf backups.tar.gz
+psql -c "CREATE DATABASE <db>;" # If necessary
+psql <db> < backups/<db>.bak
+```
 
 ## Updating
 
