@@ -3,6 +3,7 @@
 cd /var/lib/postgresql
 mkdir -p backups
 
+echo $(date)
 pg_dump rps > backups/rps.bak
 # Add more DBs here
 
