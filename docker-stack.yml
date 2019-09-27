@@ -53,6 +53,7 @@ services:
     deploy:
       restart_policy:
         condition: any
+        delay: 10s
 
   postgres:
     image: lucaspickering/keskne-postgres:latest
@@ -71,6 +72,7 @@ services:
     deploy:
       restart_policy:
         condition: any
+        delay: 10s
 
   # ===== Main site =====
   lpme:
