@@ -1,6 +1,8 @@
 version: "3.3"
 
 volumes:
+  keskne-certs:
+  keskne-postgres:
   lpme-static:
   mbta-static:
   rps-static:
@@ -45,7 +47,7 @@ services:
     secrets:
       - keskne_revproxy_amplify_api_key
     volumes:
-      - /etc/letsencrypt:/app/certs:ro
+      - keskne-certs:/app/certs:ro
       - /var/log/keskne/revproxy:/var/log/nginx:rw
       - lpme-static:/app/lpme:ro
       - mbta-static:/app/mbta:ro
@@ -58,17 +60,31 @@ services:
   postgres:
     image: lucaspickering/keskne-postgres:latest
     environment:
-      - S3_BUCKET=quilava
       - POSTGRES_USER=root
       - MBTA_DB=mbta
       - RPS_DB=rps
     secrets:
-      - keskne_s3_access_key
-      - keskne_s3_secret_key
       - keskne_mbta_db_password
       - keskne_rps_db_password
     volumes:
-      - /var/keskne/postgres:/var/lib/postgresql/data:rw
+      - keskne-postgres:/var/lib/postgresql/data:rw
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 10s
+
+  postgres-backup:
+    image: lucaspickering/keskne-postgres:latest
+    command: crond -f
+    depends_on:
+      - postgres
+    environment:
+      - S3_BUCKET=quilava
+    secrets:
+      - keskne_s3_access_key
+      - keskne_s3_secret_key
+    volumes:
+      - keskne-postgres:/var/lib/postgresql/data:rw
     deploy:
       restart_policy:
         condition: any

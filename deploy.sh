@@ -9,5 +9,4 @@ fi
 
 set -ex
 
-docker-compose -f docker-stack.yml pull $@
 docker stack deploy -c docker-stack.yml keskne
