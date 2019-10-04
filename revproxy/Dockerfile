@@ -1,10 +1,10 @@
 FROM lucaspickering/nginx-amplify:latest
 
-# This is populated with links to /dev/std(out|err) by default
-RUN rm /var/log/nginx/*
+# /var/log/nginx is populated with links to /dev/std(out|err) by default
+RUN rm /var/log/nginx/*; rm /etc/nginx/conf.d/*.conf
 
-COPY entrypoint.sh /app/entrypoint.sh
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY sites/* /etc/nginx/conf.d/
+WORKDIR /app
+COPY . .
 
 ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["/app/cmd.sh"]

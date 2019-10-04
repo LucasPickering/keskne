@@ -7,8 +7,8 @@ services:
 
   revproxy:
     build: ./revproxy
-    image: lucaspickering/keskne-revproxy
+    image: lucaspickering/keskne-revproxy:${KESKNE_IMAGE_TAG}
 
   postgres:
     build: ./postgres
-    image: lucaspickering/keskne-postgres
+    image: lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}

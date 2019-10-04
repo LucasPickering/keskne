@@ -87,3 +87,15 @@ To pull in updates for all services, run:
 ```
 
 For each service, this will only recreate the container if the image changed.
+
+## Development
+
+Keskne can be run in development with minor changes. First, edit `.env` to change the service hostnames and the tag used for docker images. Then, run:
+
+```
+./build_push.sh
+./gencert.sh
+./deploy.sh
+```
+
+Honestly I haven't tested those steps from scratch but they'll get you close at least.

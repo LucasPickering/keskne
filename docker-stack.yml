@@ -30,7 +30,7 @@ secrets:
 services:
   # ===== Keskne =====
   revproxy:
-    image: lucaspickering/keskne-revproxy:latest
+    image: lucaspickering/keskne-revproxy:${KESKNE_IMAGE_TAG}
     depends_on:
       - mbta-api
       - rps-api
@@ -43,7 +43,9 @@ services:
         published: 443
         mode: host
     environment:
-      - AMPLIFY_IMAGENAME=lucaspickering.me
+      - ROOT_HOSTNAME=${ROOT_HOSTNAME}
+      - MBTA_HOSTNAME=${MBTA_HOSTNAME}
+      - RPS_HOSTNAME=${RPS_HOSTNAME}
     secrets:
       - keskne_revproxy_amplify_api_key
     volumes:
@@ -58,7 +60,7 @@ services:
         delay: 10s
 
   postgres:
-    image: lucaspickering/keskne-postgres:latest
+    image: lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
     environment:
       - POSTGRES_USER=root
       - MBTA_DB=mbta
@@ -74,7 +76,7 @@ services:
         delay: 10s
 
   postgres-backup:
-    image: lucaspickering/keskne-postgres:latest
+    image: lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
     command: crond -f
     depends_on:
       - postgres
@@ -141,7 +143,7 @@ services:
   rps-api:
     image: lucaspickering/rps-api:latest
     environment:
-      - RPS_HOSTNAME=rps.lucaspickering.me
+      - RPS_HOSTNAME=${RPS_HOSTNAME}
       - RPS_LOGGING_DIR=/var/log/rps
       - RPS_REDIS_HOST=rps-redis:6379
       - RPS_DB_HOST=postgres
