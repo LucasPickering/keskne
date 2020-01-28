@@ -22,10 +22,6 @@ secrets:
     external: true
   keskne_rps_secret_key:
     external: true
-  keskne_rps_email_username:
-    external: true
-  keskne_rps_email_password:
-    external: true
 
 services:
   # ===== Keskne =====
@@ -155,8 +151,6 @@ services:
     secrets:
       - keskne_rps_db_password
       - keskne_rps_secret_key
-      - keskne_rps_email_username
-      - keskne_rps_email_password
     volumes:
       - /var/log/keskne/rps:/var/log/rps:rw
     deploy:
