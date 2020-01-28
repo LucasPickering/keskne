@@ -11,7 +11,7 @@ for f in ${SECRETS_DIR-"/run/secrets/"}*; do
 done
 
 # Add keys to s3 cfg file
-sed -i -r "s@^access_key = .*\$@access_key = ${S3_ACCESS_KEY}@" /root/.s3cfg
-sed -i -r "s@^secret_key = .*\$@secret_key = ${S3_SECRET_KEY}@" /root/.s3cfg
+sed -i -r "s@^access_key =.*\$@access_key = ${S3_ACCESS_KEY}@" /root/.s3cfg
+sed -i -r "s@^secret_key =.*\$@secret_key = ${S3_SECRET_KEY}@" /root/.s3cfg
 
-/docker-entrypoint.sh $@
+exec "$@"

@@ -61,24 +61,10 @@ services:
       - POSTGRES_USER=root
       - MBTA_DB=mbta
       - RPS_DB=rps
+      - S3_BUCKET
     secrets:
       - keskne_mbta_db_password
       - keskne_rps_db_password
-    volumes:
-      - keskne-postgres:/var/lib/postgresql/data:rw
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 10s
-
-  postgres-backup:
-    image: lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
-    command: crond -f
-    depends_on:
-      - postgres
-    environment:
-      - S3_BUCKET=quilava
-    secrets:
       - keskne_s3_access_key
       - keskne_s3_secret_key
     volumes:

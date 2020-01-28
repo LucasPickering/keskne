@@ -26,7 +26,7 @@ Run these commands on the remote host (with `docker-machine ssh <name>`). This w
 
 (TODO: Make this a friendlier script)
 
-```
+```sh
 apt-get update
 apt-get install software-properties-common
 add-apt-repository universe
@@ -92,9 +92,9 @@ For each service, this will only recreate the container if the image changed.
 
 Keskne can be run in development with minor changes. First, edit `.env` to change the service hostnames and the tag used for docker images. Then, run:
 
-```
+```sh
 ./build_push.sh
-./gencert.sh
+./gencert.sh # Fill in garbage
 ./deploy.sh
 ```
 
