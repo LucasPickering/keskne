@@ -1,4 +1,4 @@
-FROM postgres:10-alpine
+FROM postgres:12-alpine
 
 ENV S3CMD_VERSION 2.0.2
 
@@ -9,7 +9,7 @@ RUN apk add --no-cache supervisor \
     && tar xzvf s3cmd-${S3CMD_VERSION}.tar.gz \
     && rm s3cmd-${S3CMD_VERSION}.tar.gz \
     && cd s3cmd-${S3CMD_VERSION} \
-    && python setup.py install \
+    && python3 setup.py install \
     && ln -s s3cmd /usr/local/bin/
 
 COPY entrypoint.sh /entrypoint.sh
