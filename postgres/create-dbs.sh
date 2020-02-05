@@ -17,5 +17,4 @@ EOSQL
 }
 
 echo "Creating users and databases"
-create_user_and_database $MBTA_DB $MBTA_DB_PASSWORD
 create_user_and_database $RPS_DB $RPS_DB_PASSWORD

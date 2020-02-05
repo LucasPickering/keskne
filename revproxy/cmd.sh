@@ -2,7 +2,7 @@
 
 set -e
 echo "Filling site template confs..."
-(cd sites; for f in *; do envsubst '${ROOT_HOSTNAME} ${RPS_HOSTNAME} ${MBTA_HOSTNAME}' < $f > /etc/nginx/conf.d/$f; done)
+(cd sites; for f in *; do envsubst '${ROOT_HOSTNAME} ${RPS_HOSTNAME}' < $f > /etc/nginx/conf.d/$f; done)
 
 # Allow for placeholder keys in development
 if [ $(expr length "$REVPROXY_AMPLIFY_API_KEY") -lt 5  ]; then

@@ -4,7 +4,6 @@ volumes:
   keskne-certs:
   keskne-postgres:
   lpme-static:
-  mbta-static:
   rps-static:
 
 secrets:
@@ -13,10 +12,6 @@ secrets:
   keskne_s3_access_key:
     external: true
   keskne_s3_secret_key:
-    external: true
-  keskne_mbta_db_password:
-    external: true
-  keskne_mbta_secret_key:
     external: true
   keskne_rps_db_password:
     external: true
@@ -28,7 +23,6 @@ services:
   revproxy:
     image: lucaspickering/keskne-revproxy:${KESKNE_IMAGE_TAG}
     depends_on:
-      - mbta-api
       - rps-api
     # Need mode:host so the client IP gets logged properly
     ports:
@@ -40,7 +34,6 @@ services:
         mode: host
     environment:
       - ROOT_HOSTNAME=${ROOT_HOSTNAME}
-      - MBTA_HOSTNAME=${MBTA_HOSTNAME}
       - RPS_HOSTNAME=${RPS_HOSTNAME}
     secrets:
       - keskne_revproxy_amplify_api_key
@@ -48,7 +41,6 @@ services:
       - keskne-certs:/app/certs:ro
       - /var/log/keskne/revproxy:/var/log/nginx:rw
       - lpme-static:/app/lpme:ro
-      - mbta-static:/app/mbta:ro
       - rps-static:/app/rps:ro
     deploy:
       restart_policy:
@@ -59,11 +51,9 @@ services:
     image: lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
     environment:
       - POSTGRES_USER=root
-      - MBTA_DB=mbta
       - RPS_DB=rps
       - S3_BUCKET
     secrets:
-      - keskne_mbta_db_password
       - keskne_rps_db_password
       - keskne_s3_access_key
       - keskne_s3_secret_key
@@ -81,36 +71,6 @@ services:
       - lpme-static:/app/lpme:rw
     # We have to do this to make sure changes in the image get picked up
     command: sh -c "rm -rf /app/lpme/* && cp -r /app/static/* /app/lpme"
-    deploy:
-      restart_policy:
-        condition: none
-
-  # ===== MBTA =====
-  # WARNING: Django rejects all requests if your hostname has an underscore!
-  mbta-api:
-    image: lucaspickering/mbta-api:latest
-    environment:
-      - MBTA_DB_HOST=postgres
-      - MBTA_DB_NAME=mbta
-      - MBTA_DB_USER=mbta
-    depends_on:
-      - postgres
-    secrets:
-      - keskne_mbta_db_password
-      - keskne_mbta_secret_key
-    volumes:
-      - /var/log/keskne/mbta:/var/log/gunicorn:rw
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 10s
-
-  mbta-static:
-    image: lucaspickering/mbta-static:latest
-    volumes:
-      - mbta-static:/app/mbta:rw
-    # We have to do this to make sure changes in the image get picked up
-    command: sh -c "rm -rf /app/mbta/* && cp -r /app/static/* /app/mbta"
     deploy:
       restart_policy:
         condition: none
