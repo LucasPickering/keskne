@@ -44,10 +44,10 @@ This installs the certs to `/app/certs/live/lucaspickering.me/`
 
 ### Adding Secrets
 
-All the secrets are managed through Docker secrets. You can look at `docker-stack.yml` for the list of secrets you need to populate. Use this command:
+All the secrets are managed through Docker secrets. You can look at `docker-stack.yml` for the list of secrets you need to populate, or use `x.py` to do it:
 
 ```sh
-echo <secret_value> | docker secret create <secret_name> -
+./x.py secrets
 ```
 
 Make sure to clean out your shell history after running those.
@@ -73,7 +73,7 @@ psql <db> < backups/<db>.bak
 `keskne-revproxy` is built from the official nginx-amplify image. Unfortunately there's no official Docker repository for that image, so we have to build it ourselves from the git repo. If you change any configuration and need to rebuild a core image:
 
 ```sh
-./build_push.sh [service] ... # If no services are specified, it rebuilds/pushes all
+./x.py build --push [service] ... # If no services are specified, it rebuilds/pushes all
 ```
 
 ### Updating Services
@@ -83,19 +83,19 @@ Before running these steps, you should set your server as the active docker mach
 To pull in updates for all services, run:
 
 ```sh
-./deploy.sh
+./x.py deploy
 ```
 
 For each service, this will only recreate the container if the image changed.
 
 ## Development
 
-Keskne can be run in development with minor changes. First, edit `.env` to change the service hostnames and the tag used for docker images. Then, run:
+Keskne can be run in development with minor changes. First, edit `env.json` to change the service hostnames and the tag used for docker images. Then, run:
 
 ```sh
-./build_push.sh
+./x.py build --push
 ./gencert.sh # Fill in garbage
-./deploy.sh
+./x.py deploy
 ```
 
 Honestly I haven't tested those steps from scratch but they'll get you close at least.
