@@ -3,7 +3,6 @@
 import abc
 import argparse
 import docker
-import itertools
 import json
 import os
 import subprocess
@@ -47,8 +46,13 @@ class Command(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def run(self, args):
+    def run(self, *args, **kwargs):
         pass
+
+
+def load_env(env_file):
+    with open(env_file) as f:
+        return json.load(f)
 
 
 def run_cmd(cmd, env={}):
@@ -58,24 +62,79 @@ def run_cmd(cmd, env={}):
         cmd {[str]} -- The command, as a list of arguments
     """
     print(
-        "+ {} [{}]".format(
-            " ".join(cmd), ", ".join(f"{key}={val}" for key, val in env.items())
+        "+ {env} {cmd}".format(
+            cmd=" ".join(cmd),
+            env=" ".join(f"{key}={val}" for key, val in env.items()),
         )
     )
-    full_env = {**os.environ, **env}
-    subprocess.run(cmd, check=True, env=full_env)
+
+    return subprocess.run(cmd, check=True, env={**env, **os.environ})
 
 
-def run_in_docker_service(service, cmd, env={}):
-    """
-    Runs a command in the container corresponding to the given docker-compose
-    service. This will turn the service into a container name, then run the cmd.
-    """
-    # create an iter of each env var, e.g. ['-e', 'k1=v1', '-e', 'k2=v2']
-    env_vars = itertools.chain.from_iterable(
-        ["-e", f"{k}={v}"] for k, v in env.items()
-    )
-    run_cmd(["docker", "exec", "-t", *env_vars, f"gdlk_{service}_1", *cmd])
+@command(
+    "gencert",
+    "Generate a self-signed SSL cert and copy it into a docker volume",
+)
+class GenCert(Command):
+    TMP_CONTAINER = "certs"
+
+    def configure_parser(self, parser):
+        parser.add_argument(
+            "--volume",
+            default="keskne_keskne-certs",
+            help="The docker volume to copy the cert into",
+        )
+
+    def run(self, env_file, volume, **kwargs):
+        env = load_env(env_file)
+        domain = env["ROOT_HOSTNAME"]  # domain to gen a cert for
+        run_cmd(
+            [
+                "openssl",
+                "req",
+                "-x509",
+                "-nodes",
+                "-days",
+                "365",
+                "-newkey",
+                "rsa:2048",
+                "-keyout",
+                "privkey.pem",
+                "-out",
+                "fullchain.pem",
+                "-subj",
+                f"/CN={domain}/",
+            ]
+        )
+
+        run_cmd(
+            [
+                "docker",
+                "run",
+                "-d",
+                "--rm",
+                "--name",
+                self.TMP_CONTAINER,
+                "-v",
+                f"{volume}:/app/certs:rw",
+                "alpine",
+                "tail",
+                "-f",
+                "/dev/null",
+            ]
+        )
+
+        try:
+            dest_path = f"/app/certs/{domain}/"
+            cp_dest = f"{self.TMP_CONTAINER}:{dest_path}"
+            run_cmd(
+                ["docker", "exec", self.TMP_CONTAINER, "mkdir", "-p", dest_path]
+            )
+            run_cmd(["docker", "cp", "privkey.pem", cp_dest])
+            run_cmd(["docker", "cp", "fullchain.pem", cp_dest])
+        finally:
+            run_cmd(["docker", "stop", "-t", "0", self.TMP_CONTAINER])
+            run_cmd(["rm", "privkey.pem", "fullchain.pem"])
 
 
 @command("build", "Build and (optionally) push local Keskne images")
@@ -93,27 +152,52 @@ class Build(Command):
             help="Push images after building",
         )
 
-    def run(self, services, push):
+    def run(self, env_file, services, push, **kwargs):
+        env = load_env(env_file)
         base_cmd = ["docker-compose", "-f", "docker-compose.build.yml"]
-        run_cmd([*base_cmd, "build", "--pull", *services])
+        run_cmd([*base_cmd, "build", "--pull", *services], env=env)
         if push:
-            run_cmd([*base_cmd, "push", *services])
+            run_cmd([*base_cmd, "push", *services], env=env)
 
 
 @command("clean", "Clean up docker stuff")
 class Clean(Command):
-    def run(self):
+    def run(self, **kwargs):
         run_cmd(["docker", "system", "prune", "-f"])
 
 
 @command("secrets", "Insert docker secrets")
 class Secrets(Command):
-    def configure_parser(self, parser):
-        parser.add_argument("--docker-stack", "-d", default="docker-stack.yml")
-        parser.add_argument("--skip-existing", "-s", action="store_true")
 
-    def run(self, docker_stack, skip_existing):
-        with open(docker_stack) as f:
+    PLACEHOLDER_VALUE = "hunter2"
+
+    def configure_parser(self, parser):
+        parser.add_argument(
+            "--stack-config",
+            "-c",
+            default="docker-stack.yml",
+            help="The docker stack config file to pull secrets from",
+        )
+        parser.add_argument(
+            "--skip-existing",
+            "-s",
+            action="store_true",
+            help="Skip any secret that already exists",
+        )
+        parser.add_argument(
+            "--placeholder",
+            action="store_true",
+            help="Auto-fill all non-existing secrets with placeholder values",
+        )
+
+    def fmt_msg(self, secret_name, msg, show_name=True):
+        if show_name:
+            return f"[{secret_name}] {msg}"
+        else:
+            return "{{:>{}}} {}".format(len(secret_name) + 2, msg).format("")
+
+    def run(self, stack_config, skip_existing, placeholder, **kwargs):
+        with open(stack_config) as f:
             secrets = list(
                 yaml.load(f, Loader=yaml.SafeLoader)["secrets"].keys()
             )
@@ -125,35 +209,42 @@ class Secrets(Command):
             if existing_secret:
                 skip = (
                     skip_existing
+                    or placeholder
                     or input(
-                        f"[{secret_name}] Already exists, write new value? (y/N): "
+                        self.fmt_msg(
+                            secret_name,
+                            "Already exists, write new value? (y/N): ",
+                        )
                     )
                     .strip()
                     .lower()
                     != "y"
                 )
                 if skip:
-                    print(f"[{secret_name}] Skipped")
+                    print(self.fmt_msg(secret_name, "Skipped", show_name=False))
                     continue
-            new_value = input(f"[{secret_name}] = ")
+
+            # Use placeholder value or read from user
+            if placeholder:
+                print(self.fmt_msg(secret_name, f"= {self.PLACEHOLDER_VALUE}"))
+                new_value = self.PLACEHOLDER_VALUE
+            else:
+                new_value = input(self.fmt_msg(secret_name, "= "))
+
             if new_value:
                 if existing_secret:
                     existing_secret.remove()
                 client.secrets.create(name=secret_name, data=new_value)
-                print(f"[{secret_name}] Set")
+                print(self.fmt_msg(secret_name, "Set", show_name=False))
             else:
-                print(f"[{secret_name}] Skipped")
+                print(self.fmt_msg(secret_name, "Skipped", show_name=False))
 
 
 @command("deploy", "Deploy the stack")
 class Deploy(Command):
+    LOG_SUBDIRS = ["revproxy", "rps"]
+
     def configure_parser(self, parser):
-        parser.add_argument(
-            "--env-file",
-            "-e",
-            default="env.json",
-            help="The environment file to use (a JSON mapping)",
-        )
         parser.add_argument(
             "--stack-name",
             "-n",
@@ -166,10 +257,18 @@ class Deploy(Command):
             default="docker-stack.yml",
             help="The YAML file that defines the stack to deploy",
         )
+        parser.add_argument(
+            "--make-logs",
+            action="store_true",
+            help="Create log directories on the local machine",
+        )
 
-    def run(self, env_file, stack_name, stack_config):
-        with open(env_file) as f:
-            env = json.load(f)
+    def run(self, env_file, stack_name, stack_config, make_logs, **kwargs):
+        env = load_env(env_file)
+        if make_logs:
+            logs_dir = env["KESKNE_LOGS_DIR"]
+            for subdir in self.LOG_SUBDIRS:
+                run_cmd(["mkdir", "-p", os.path.join(logs_dir, subdir)])
         run_cmd(
             ["docker", "stack", "deploy", "-c", stack_config, stack_name],
             env=env,
@@ -179,6 +278,12 @@ class Deploy(Command):
 def main():
     parser = argparse.ArgumentParser(
         description="Utility script for task execution"
+    )
+    parser.add_argument(
+        "--env-file",
+        "-e",
+        default="env.json",
+        help="The environment file to use (a JSON mapping)",
     )
     subparsers = parser.add_subparsers(
         help="sub-command help", dest="cmd", required=True

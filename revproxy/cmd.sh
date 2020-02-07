@@ -2,6 +2,7 @@
 
 set -e
 echo "Filling site template confs..."
+envsubst '${ROOT_HOSTNAME}' < nginx.conf > /etc/nginx/nginx.conf
 (cd sites; for f in *; do envsubst '${ROOT_HOSTNAME} ${RPS_HOSTNAME}' < $f > /etc/nginx/conf.d/$f; done)
 
 # Allow for placeholder keys in development

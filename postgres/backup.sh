@@ -9,5 +9,6 @@ echo $(date)
 pg_dump rps > backups/rps.bak
 # Add more DBs here
 
-tar czvf backups.tar.gz backups/
-s3cmd put backups.tar.gz s3://${S3_BUCKET}
+FILE_NAME=backups-$(date -u +"%Y-%m-%dT%H:%M:%SZ").tar.gz
+tar czvf "$FILE_NAME" backups/
+s3cmd put "$FILE_NAME" s3://${S3_BUCKET}

@@ -5,7 +5,6 @@ RUN rm /var/log/nginx/*; rm /etc/nginx/conf.d/*.conf
 
 WORKDIR /app
 COPY . .
-COPY nginx.conf /etc/nginx/nginx.conf
 
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/cmd.sh"]

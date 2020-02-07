@@ -20,27 +20,13 @@ docker swarm init
 
 ### Generating certs
 
-Run these commands on the remote host (with `docker-machine ssh <name>`). This will generate a wildcard cert, that works on all first-level subdomains.
-
-[Go here](https://cloud.digitalocean.com/settings/api/tokens) to get another DO API token for the server. Then run this stuff on the server:
-
-(TODO: Make this a friendlier script)
+This should be set up behind Cloudflare, in which case Cloudflare provides its own certs. We can use a self-signed cert locally and Cloudflare will accept that.
 
 ```sh
-apt-get update
-apt-get install software-properties-common
-add-apt-repository universe
-add-apt-repository ppa:certbot/certbot
-apt-get update
-apt-get install certbot python3-certbot-dns-digitalocean
-echo "dns_digitalocean_token = <token>" > ~/do.ini
-chmod 600 ~/do.ini
-DOMAIN=<domain> certbot -a dns-digitalocean -i nginx -d "*.$DOMAIN" -d $DOMAIN --server https://acme-v02.api.letsencrypt.org/directory --dns-digitalocean-credentials ~/do.ini certonly
+./x.py gencert
 ```
 
-This installs the certs to `/app/certs/live/lucaspickering.me/`
-
-[Instructions from here](https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx)
+Once that is working, you can optionally replace the self-signed cert with a [Cloudflare Origin CA cert](https://support.cloudflare.com/hc/en-us/articles/115000479507#h_30e5cf09-6e98-48e1-a9f1-427486829feb), then set the SSL/TLS mode in Cloudflare to "Full (Strict)".
 
 ### Adding Secrets
 
@@ -60,8 +46,8 @@ To restore the DB, shell into the postgres container, and run:
 
 ```sh
 cd /var/lib/postgresql
-s3cmd get s3://$S3_BUCKET/backups.tar.gz
-tar xzvf backups.tar.gz
+s3cmd get s3://$S3_BUCKET/<file name>
+tar xzvf <file name>
 psql -c "CREATE DATABASE <db>;" # If necessary
 psql <db> < backups/<db>.bak
 ```
@@ -86,16 +72,20 @@ To pull in updates for all services, run:
 ./x.py deploy
 ```
 
-For each service, this will only recreate the container if the image changed.
-
 ## Development
 
-Keskne can be run in development with minor changes. First, edit `env.json` to change the service hostnames and the tag used for docker images. Then, run:
+Keskne can be run in development with minor setup. First:
 
 ```sh
-./x.py build --push
-./gencert.sh # Fill in garbage
-./x.py deploy
+cp env.json dev.env.json
 ```
 
-Honestly I haven't tested those steps from scratch but they'll get you close at least.
+Then edit `dev.env.json` to change `KESKNE_IMAGE_TAG`, `KESKNE_LOGS_DIR`, and the hostnames. You may have to edit `/etc/hosts` to add domains that point to `127.0.0.1`. Then:
+
+```sh
+docker swarm init
+./x.py -e dev.env.json build --push
+./x.py -e dev.env.json gencert
+./x.py -e dev.env.json secrets --placeholder
+./x.py -e dev.env.json deploy --make-logs
+```

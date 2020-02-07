@@ -38,8 +38,8 @@ services:
     secrets:
       - keskne_revproxy_amplify_api_key
     volumes:
+      - ${KESKNE_LOGS_DIR}/revproxy:/var/log/nginx:rw
       - keskne-certs:/app/certs:ro
-      - /var/log/keskne/revproxy:/var/log/nginx:rw
       - lpme-static:/app/lpme:ro
       - rps-static:/app/rps:ro
     deploy:
@@ -98,7 +98,7 @@ services:
       - keskne_rps_db_password
       - keskne_rps_secret_key
     volumes:
-      - /var/log/keskne/rps:/var/log/rps:rw
+      - ${KESKNE_LOGS_DIR}/rps:/var/log/rps:rw
     deploy:
       restart_policy:
         condition: any

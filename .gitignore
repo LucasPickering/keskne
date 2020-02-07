@@ -1,2 +1,4 @@
 *.pem
-*.key
+*.env.json
+.vscode
+logs/
