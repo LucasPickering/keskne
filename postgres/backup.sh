@@ -7,6 +7,7 @@ mkdir -p backups
 
 echo $(date)
 pg_dump rps > backups/rps.bak
+pg_dump gdlk > backups/gdlk.bak
 # Add more DBs here
 
 FILE_NAME=backups-$(date -u +"%Y-%m-%dT%H:%M:%SZ").tar.gz

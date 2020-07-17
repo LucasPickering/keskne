@@ -13,7 +13,7 @@ RUN apk add --no-cache supervisor \
     && ln -s s3cmd /usr/local/bin/
 
 COPY entrypoint.sh /entrypoint.sh
-COPY create-dbs.sh /docker-entrypoint-initdb.d/
+COPY ./init.d/ /docker-entrypoint-initdb.d/
 COPY postgres_cron.ini /etc/supervisor.d/
 COPY crontab /etc/crontab
 COPY backup.sh /var/lib/postgresql/

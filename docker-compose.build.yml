@@ -3,12 +3,12 @@ version: "3"
 services:
   nginx-amplify:
     build: https://github.com/nginxinc/docker-nginx-amplify.git
-    image: lucaspickering/nginx-amplify
+    image: gcr.io/keskne-283621/nginx-amplify
 
   revproxy:
     build: ./revproxy
-    image: lucaspickering/keskne-revproxy:${KESKNE_IMAGE_TAG}
+    image: gcr.io/keskne-283621/keskne-revproxy:${KESKNE_IMAGE_TAG}
 
   postgres:
     build: ./postgres
-    image: lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
+    image: gcr.io/keskne-283621/keskne-postgres:${KESKNE_IMAGE_TAG}

@@ -5,23 +5,37 @@ volumes:
   keskne-postgres:
   lpme-static:
   rps-static:
+  gdlk-static:
 
 secrets:
   keskne_revproxy_amplify_api_key:
+    external: true
+
+  keskne_postgres_password:
     external: true
   keskne_s3_access_key:
     external: true
   keskne_s3_secret_key:
     external: true
+
   keskne_rps_db_password:
     external: true
   keskne_rps_secret_key:
     external: true
 
+  keskne_gdlk_db_password:
+    external: true
+  keskne_gdlk_secret_key:
+    external: true
+  keskne_gdlk_open_id__providers__google__client_id:
+    external: true
+  keskne_gdlk_open_id__providers__google__client_secret:
+    external: true
+
 services:
   # ===== Keskne =====
   revproxy:
-    image: lucaspickering/keskne-revproxy:${KESKNE_IMAGE_TAG}
+    image: gcr.io/keskne-283621/keskne-revproxy:${KESKNE_IMAGE_TAG}
     depends_on:
       - rps-api
     # Need mode:host so the client IP gets logged properly
@@ -35,6 +49,7 @@ services:
     environment:
       - ROOT_HOSTNAME=${ROOT_HOSTNAME}
       - RPS_HOSTNAME=${RPS_HOSTNAME}
+      - GDLK_HOSTNAME=${GDLK_HOSTNAME}
     secrets:
       - keskne_revproxy_amplify_api_key
     volumes:
@@ -42,21 +57,25 @@ services:
       - keskne-certs:/app/certs:ro
       - lpme-static:/app/lpme:ro
       - rps-static:/app/rps:ro
+      - gdlk-static:/app/gdlk:ro
     deploy:
       restart_policy:
         condition: any
         delay: 10s
 
   postgres:
-    image: lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
+    image: gcr.io/keskne-283621/keskne-postgres:${KESKNE_IMAGE_TAG}
     environment:
       - POSTGRES_USER=root
       - RPS_DB=rps
+      - GDLK_DB=gdlk
       - S3_BUCKET
     secrets:
-      - keskne_rps_db_password
+      - keskne_postgres_password
       - keskne_s3_access_key
       - keskne_s3_secret_key
+      - keskne_rps_db_password
+      - keskne_gdlk_db_password
     volumes:
       - keskne-postgres:/var/lib/postgresql/data:rw
     deploy:
@@ -110,6 +129,41 @@ services:
       - rps-static:/app/rps:rw
     # We have to do this to make sure changes in the image get picked up
     command: sh -c "rm -rf /app/rps/* && cp -r /app/static/* /app/rps"
+    deploy:
+      restart_policy:
+        condition: none
+
+  # ===== GDLK =====
+  gdlk-api:
+    image: gcr.io/gdlkit/gdlk-api-prd:latest
+    environment:
+      # These 3 get loaded by the entrypoint
+      GDLK_DB_HOST: postgres
+      GDLK_DB_NAME: gdlk
+      GDLK_DB_USER: gdlk
+      # These get loaded directly by the app
+      RUST_LOG: debug
+      RUST_BACKTRACE: full
+      GDLK_SERVER_HOST: 0.0.0.0:8000
+      GDLK_OPEN_ID__HOST_URL: https://${GDLK_HOSTNAME}
+    depends_on:
+      - postgres
+    secrets:
+      - keskne_gdlk_db_password
+      - keskne_gdlk_secret_key
+      - keskne_gdlk_open_id__providers__google__client_id
+      - keskne_gdlk_open_id__providers__google__client_secret
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 10s
+
+  gdlk-static:
+    image: gcr.io/gdlkit/gdlk-frontend-prd:latest
+    volumes:
+      - gdlk-static:/app/gdlk:rw
+    # We have to do this to make sure changes in the image get picked up
+    command: sh -c "rm -rf /app/gdlk/* && cp -r /app/static/* /app/gdlk"
     deploy:
       restart_policy:
         condition: none

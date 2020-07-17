@@ -1,1 +1,0 @@
-../load_secrets.sh
