@@ -42,14 +42,14 @@ Make sure to clean out your shell history after running those.
 
 Certain DBs under postgres get backed up automatically every night. To add another DB to the backup list, see `postgres/backup.sh`.
 
-To restore the DB, shell into the postgres container, and run:
+To restore the DB, shell into the `postgres-backup` container, and run:
 
 ```sh
-cd /var/lib/postgresql
+cd /root
 s3cmd get s3://$S3_BUCKET/<file name>
 tar xzvf <file name>
-psql -c "CREATE DATABASE <db>;" # If necessary
-psql <db> < backups/<db>.bak
+PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER -c "CREATE DATABASE <db>;" # If necessary
+PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER <db> < backups/<db>.bak
 ```
 
 ## Updating

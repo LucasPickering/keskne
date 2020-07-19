@@ -50,6 +50,7 @@ services:
       - ROOT_HOSTNAME=${ROOT_HOSTNAME}
       - RPS_HOSTNAME=${RPS_HOSTNAME}
       - GDLK_HOSTNAME=${GDLK_HOSTNAME}
+      - AMPLIFY_API_KEY_FILE=/run/secrets/keskne_revproxy_amplify_api_key
     secrets:
       - keskne_revproxy_amplify_api_key
     volumes:
@@ -69,15 +70,30 @@ services:
       - POSTGRES_USER=root
       - RPS_DB=rps
       - GDLK_DB=gdlk
-      - S3_BUCKET
     secrets:
       - keskne_postgres_password
-      - keskne_s3_access_key
-      - keskne_s3_secret_key
       - keskne_rps_db_password
       - keskne_gdlk_db_password
     volumes:
       - keskne-postgres:/var/lib/postgresql/data:rw
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 10s
+
+  postgres-backup:
+    image: gcr.io/keskne-283621/keskne-postgres-backup:${KESKNE_IMAGE_TAG}
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD_FILE: /run/secrets/keskne_postgres_password
+      S3_BUCKET: # This gets loaded from the env file
+      S3_ACCESS_KEY_FILE: /run/secrets/keskne_s3_access_key
+      S3_SECRET_KEY_FILE: /run/secrets/keskne_s3_secret_key
+    secrets:
+      - keskne_postgres_password
+      - keskne_s3_access_key
+      - keskne_s3_secret_key
     deploy:
       restart_policy:
         condition: any
@@ -137,18 +153,27 @@ services:
   gdlk-api:
     image: gcr.io/gdlkit/gdlk-api-prd:latest
     environment:
-      # These 3 get loaded by the entrypoint
+      # These get loaded by the loader script
       GDLK_DB_HOST: postgres
       GDLK_DB_NAME: gdlk
-      GDLK_DB_USER: gdlk
+      # This user is just used for migrations
+      GDLK_ROOT_DB_USER: root
+      GDLK_ROOT_DB_PASSWORD_FILE: /run/secrets/keskne_postgres_password
+      # The webserver uses this user
+      GDLK_APP_DB_USER: gdlk
+      GDLK_APP_DB_PASSWORD_FILE: /run/secrets/keskne_gdlk_db_password
+      GDLK_SECRET_KEY_FILE: /run/secrets/keskne_gdlk_secret_key
+      GDLK_GOOGLE_CLIENT_ID_FILE: /run/secrets/keskne_gdlk_open_id__providers__google__client_id
+      GDLK_GOOGLE_CLIENT_SECRET_FILE: /run/secrets/keskne_gdlk_open_id__providers__google__client_secret
       # These get loaded directly by the app
-      RUST_LOG: debug
+      RUST_LOG: debug # TODO lower this
       RUST_BACKTRACE: full
       GDLK_SERVER_HOST: 0.0.0.0:8000
       GDLK_OPEN_ID__HOST_URL: https://${GDLK_HOSTNAME}
     depends_on:
       - postgres
     secrets:
+      - keskne_postgres_password
       - keskne_gdlk_db_password
       - keskne_gdlk_secret_key
       - keskne_gdlk_open_id__providers__google__client_id

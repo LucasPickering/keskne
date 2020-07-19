@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
-PREFIX=keskne_ source /app/load_secrets.sh
+# We need this just so that we can override the default entrypoint
 exec $@
