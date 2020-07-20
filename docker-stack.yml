@@ -101,7 +101,7 @@ services:
 
   # ===== Main site =====
   lpme:
-    image: lucaspickering/lucaspickering.me-static
+    image: gcr.io/lucaspickering/lucaspickering.me-static:latest
     volumes:
       - lpme-static:/app/lpme:rw
     # We have to do this to make sure changes in the image get picked up
