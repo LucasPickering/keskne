@@ -1,0 +1,28 @@
+name: Build and push images
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  COMPOSE_FILE: docker-compose.build.yml
+
+jobs:
+  build-all:
+    name: "Build & push all images"
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          pip install docker pyyaml
+      - name: Build & push image
+        run: |
+          docker login -u _json_key -p '${{ secrets.GCR_SECRET_KEY }}' gcr.io
+          ./x.py build --push
