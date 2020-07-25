@@ -5,7 +5,6 @@ volumes:
   keskne-postgres:
   lpme-static:
   rps-static:
-  gdlk-static:
 
 secrets:
   keskne_revproxy_amplify_api_key:
@@ -21,15 +20,6 @@ secrets:
   keskne_rps_db_password:
     external: true
   keskne_rps_secret_key:
-    external: true
-
-  keskne_gdlk_db_password:
-    external: true
-  keskne_gdlk_secret_key:
-    external: true
-  keskne_gdlk_open_id__providers__google__client_id:
-    external: true
-  keskne_gdlk_open_id__providers__google__client_secret:
     external: true
 
 services:
@@ -49,7 +39,6 @@ services:
     environment:
       - ROOT_HOSTNAME=${ROOT_HOSTNAME}
       - RPS_HOSTNAME=${RPS_HOSTNAME}
-      - GDLK_HOSTNAME=${GDLK_HOSTNAME}
       - AMPLIFY_API_KEY_FILE=/run/secrets/keskne_revproxy_amplify_api_key
     secrets:
       - keskne_revproxy_amplify_api_key
@@ -58,7 +47,6 @@ services:
       - keskne-certs:/app/certs:ro
       - lpme-static:/app/lpme:ro
       - rps-static:/app/rps:ro
-      - gdlk-static:/app/gdlk:ro
     deploy:
       restart_policy:
         condition: any
@@ -69,11 +57,9 @@ services:
     environment:
       - POSTGRES_USER=root
       - RPS_DB=rps
-      - GDLK_DB=gdlk
     secrets:
       - keskne_postgres_password
       - keskne_rps_db_password
-      - keskne_gdlk_db_password
     volumes:
       - keskne-postgres:/var/lib/postgresql/data:rw
     deploy:
@@ -145,50 +131,6 @@ services:
       - rps-static:/app/rps:rw
     # We have to do this to make sure changes in the image get picked up
     command: sh -c "rm -rf /app/rps/* && cp -r /app/static/* /app/rps"
-    deploy:
-      restart_policy:
-        condition: none
-
-  # ===== GDLK =====
-  gdlk-api:
-    image: gcr.io/gdlkit/gdlk-api-prd:latest
-    environment:
-      # These get loaded by the loader script
-      GDLK_DB_HOST: postgres
-      GDLK_DB_NAME: gdlk
-      # This user is just used for migrations
-      GDLK_ROOT_DB_USER: root
-      GDLK_ROOT_DB_PASSWORD_FILE: /run/secrets/keskne_postgres_password
-      # The webserver uses this user
-      GDLK_APP_DB_USER: gdlk
-      GDLK_APP_DB_PASSWORD_FILE: /run/secrets/keskne_gdlk_db_password
-      GDLK_SECRET_KEY_FILE: /run/secrets/keskne_gdlk_secret_key
-      GDLK_GOOGLE_CLIENT_ID_FILE: /run/secrets/keskne_gdlk_open_id__providers__google__client_id
-      GDLK_GOOGLE_CLIENT_SECRET_FILE: /run/secrets/keskne_gdlk_open_id__providers__google__client_secret
-      # These get loaded directly by the app
-      RUST_LOG: debug # TODO lower this
-      RUST_BACKTRACE: full
-      GDLK_SERVER_HOST: 0.0.0.0:8000
-      GDLK_OPEN_ID__HOST_URL: https://${GDLK_HOSTNAME}
-    depends_on:
-      - postgres
-    secrets:
-      - keskne_postgres_password
-      - keskne_gdlk_db_password
-      - keskne_gdlk_secret_key
-      - keskne_gdlk_open_id__providers__google__client_id
-      - keskne_gdlk_open_id__providers__google__client_secret
-    deploy:
-      restart_policy:
-        condition: any
-        delay: 10s
-
-  gdlk-static:
-    image: gcr.io/gdlkit/gdlk-frontend-prd:latest
-    volumes:
-      - gdlk-static:/app/gdlk:rw
-    # We have to do this to make sure changes in the image get picked up
-    command: sh -c "rm -rf /app/gdlk/* && cp -r /app/static/* /app/gdlk"
     deploy:
       restart_policy:
         condition: none

@@ -3,7 +3,7 @@
 set -e
 
 # Add more DBs here
-DATABASES="rps gdlk"
+DATABASES="rps"
 
 cd /var/lib/postgresql
 mkdir -p backups
