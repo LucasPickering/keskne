@@ -16,3 +16,7 @@ services:
   postgres-backup:
     build: ./postgres-backup
     image: gcr.io/keskne-283621/keskne-postgres-backup:${KESKNE_IMAGE_TAG}
+
+  postgres-backup-google:
+    build: ./postgres-backup-google
+    image: gcr.io/keskne-283621/keskne-postgres-backup-google:${KESKNE_IMAGE_TAG}
