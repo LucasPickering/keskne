@@ -40,7 +40,7 @@ Make sure to clean out your shell history after running those.
 
 ### Database Backup/Restore
 
-Certain DBs under postgres get backed up automatically every night. To add another DB to the backup list, see `postgres/backup.sh`.
+Certain DBs under postgres get backed up automatically. For more info, read `postgres-backup/README.md`. To add another DB to the backup list, see `postgres/backup.sh`.
 
 To restore the DB, shell into the `postgres-backup` container, and run:
 

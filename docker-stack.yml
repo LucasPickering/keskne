@@ -7,16 +7,19 @@ volumes:
   rps-static:
 
 secrets:
+  # revproxy container
   keskne_revproxy_amplify_api_key:
     external: true
 
+  # postgres-backup container
   keskne_postgres_password:
     external: true
-  keskne_s3_access_key:
+  keskne_cloud_storage_bucket:
     external: true
-  keskne_s3_secret_key:
+  keskne_cloud_storage_key:
     external: true
 
+  # rps-api container
   keskne_rps_db_password:
     external: true
   keskne_rps_secret_key:
@@ -68,18 +71,19 @@ services:
         delay: 10s
 
   postgres-backup:
-    image: gcr.io/keskne-283621/keskne-postgres-backup:${KESKNE_IMAGE_TAG}
+    image: gcr.io/keskne-283621/keskne-postgres-backup-google:${KESKNE_IMAGE_TAG}
     environment:
+      BACKUP_CRON_SCHEDULE: 0 0 * * * # Daily backups
+      DATABASES: rps
       POSTGRES_HOST: postgres
       POSTGRES_USER: root
       POSTGRES_PASSWORD_FILE: /run/secrets/keskne_postgres_password
-      S3_BUCKET: # This gets loaded from the env file
-      S3_ACCESS_KEY_FILE: /run/secrets/keskne_s3_access_key
-      S3_SECRET_KEY_FILE: /run/secrets/keskne_s3_secret_key
+      CLOUD_STORAGE_BUCKET_FILE: /run/secrets/keskne_cloud_storage_bucket
+      CLOUD_STORAGE_KEY_FILE: /run/secrets/keskne_cloud_storage_key
     secrets:
       - keskne_postgres_password
-      - keskne_s3_access_key
-      - keskne_s3_secret_key
+      - keskne_cloud_storage_bucket
+      - keskne_cloud_storage_key
     deploy:
       restart_policy:
         condition: any
