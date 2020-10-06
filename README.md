@@ -83,7 +83,7 @@ Then edit `dev.env.json` to change `KESKNE_IMAGE_TAG`, `KESKNE_LOGS_DIR`, and th
 
 ```sh
 docker swarm init
-./x.py -e dev.env.json build --push
+./x.py -e dev.env.json build
 ./x.py -e dev.env.json gencert
 ./x.py -e dev.env.json secrets --placeholder
 ./x.py -e dev.env.json deploy --make-logs
