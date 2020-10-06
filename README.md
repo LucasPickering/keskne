@@ -45,11 +45,10 @@ Certain DBs under postgres get backed up automatically. For more info, read `pos
 To restore the DB, shell into the `postgres-backup` container, and run:
 
 ```sh
-cd /root
-s3cmd get s3://$S3_BUCKET/<file name>
-tar xzvf <file name>
-PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER -c "CREATE DATABASE <db>;" # If necessary
-PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER <db> < backups/<db>.bak
+gsutil cp gs://<bucket>/<backup file> .
+tar xzvf <backup file>
+PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER -c "CREATE DATABASE gdlk;" # If necessary
+PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER gdlk < backups/gdlk.bak<db>.bak
 ```
 
 ## Updating
