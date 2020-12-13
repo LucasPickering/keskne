@@ -5,6 +5,7 @@ volumes:
   keskne-postgres:
   lpme-static:
   rps-static:
+  terra-static:
 
 secrets:
   # revproxy container
@@ -42,6 +43,7 @@ services:
     environment:
       - ROOT_HOSTNAME=${ROOT_HOSTNAME}
       - RPS_HOSTNAME=${RPS_HOSTNAME}
+      - TERRA_HOSTNAME=${TERRA_HOSTNAME}
       - AMPLIFY_API_KEY_FILE=/run/secrets/keskne_revproxy_amplify_api_key
     secrets:
       - keskne_revproxy_amplify_api_key
@@ -50,6 +52,7 @@ services:
       - keskne-certs:/app/certs:ro
       - lpme-static:/app/lpme:ro
       - rps-static:/app/rps:ro
+      - terra-static:/app/terra:ro
     deploy:
       restart_policy:
         condition: any
@@ -135,6 +138,17 @@ services:
       - rps-static:/app/rps:rw
     # We have to do this to make sure changes in the image get picked up
     command: sh -c "rm -rf /app/rps/* && cp -r /app/static/* /app/rps"
+    deploy:
+      restart_policy:
+        condition: none
+
+  # ===== Terra =====
+  terra-static:
+    image: gcr.io/keskne-283621/terra-static:latest
+    volumes:
+      - terra-static:/app/terra:rw
+    # We have to do this to make sure changes in the image get picked up
+    command: sh -c "rm -rf /app/terra/* && cp -r /app/static/* /app/terra"
     deploy:
       restart_policy:
         condition: none
