@@ -8,6 +8,8 @@ echo "$schedule /app/backup.sh >> /var/log/backup.log" > /etc/crontab
 crontab /etc/crontab
 echo "Set backup schedule to \"$schedule\""
 
-gcloud auth activate-service-account --key-file=$CLOUD_STORAGE_KEY_FILE
+set +e
+gcloud auth activate-service-account --key-file=$CLOUD_STORAGE_KEY_FILE || echo "Failed to log in to Google Cloud"
+set -e
 
 exec $@

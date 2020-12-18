@@ -3,13 +3,13 @@
 # Env vars we expect as input:
 # - ROOT_HOSTNAME
 # - RPS_HOSTNAME
-# - TERRA_HOSTNAME
+# - LAULUD_HOSTNAME
 # - AMPLIFY_API_KEY_FILE
 
 set -e
 echo "Filling site template confs..."
 envsubst '${ROOT_HOSTNAME}' < nginx.conf > /etc/nginx/nginx.conf
-(cd sites; for f in *; do envsubst '${ROOT_HOSTNAME} ${RPS_HOSTNAME} ${TERRA_HOSTNAME}' < $f > /etc/nginx/conf.d/$f; done)
+(cd sites; for f in *; do envsubst '${ROOT_HOSTNAME} ${RPS_HOSTNAME} ${LAULUD_HOSTNAME}' < $f > /etc/nginx/conf.d/$f; done)
 
 # Allow for placeholder keys in development
 amplify_key=$(cat $AMPLIFY_API_KEY_FILE)

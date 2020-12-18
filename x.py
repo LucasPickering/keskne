@@ -242,7 +242,7 @@ class Secrets(Command):
 
 @command("deploy", "Deploy the stack")
 class Deploy(Command):
-    LOG_SUBDIRS = ["revproxy", "rps"]
+    LOG_SUBDIRS = ["revproxy", "rps", "laulud"]
 
     def configure_parser(self, parser):
         parser.add_argument(
