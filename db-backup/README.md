@@ -1,20 +1,21 @@
 # postgres-backup
 
-This is an image to periodically back up a Postgres instance and upload the backup to a Google Cloud Storage bucket.
+This is an image to periodically back up databases from a Mongo instance and/or a Postgres instance and upload the backups to a Google Cloud Storage bucket.
 
 ## Env Variables
 
 Backup can be configured through a few env variables:
 
-| Variable                    | Purpose                                            | Required? | Default             |
-| --------------------------- | -------------------------------------------------- | --------- | ------------------- |
-| `DATABASES`                 | Space-separated list of databases to back up       | Y         |                     |
-| `POSTGRES_HOST`             | Postgres URL of the DB host to connect to          | Y         |                     |
-| `POSTGRES_USER`             | Postgres user to connect as                        | Y         |                     |
-| `POSTGRES_PASSWORD_FILE`    | File holding the postgres password                 | Y         |                     |
-| `CLOUD_STORAGE_BUCKET_FILE` | File holding the name of the Cloud Storage bucket  | Y         |                     |
-| `CLOUD_STORAGE_KEY_FILE`    | File holding the key used to access Cloud Storage  | Y         |                     |
-| `BACKUP_CRON_SCHEDULE`      | Cron schedule defining how often to run the backup | N         | `0 0 * * *` (Daily) |
+| Variable                    | Purpose                                               | Required? | Default             |
+| --------------------------- | ----------------------------------------------------- | --------- | ------------------- |
+| `MONGO_DATABASES`           | Space-separated list of Mongo databases to back up    | Y         |                     |
+| `POSTGRES_DATABASES`        | Space-separated list of Postgres databases to back up | Y         |                     |
+| `POSTGRES_HOST`             | Postgres URL of the DB host to connect to             | Y         |                     |
+| `POSTGRES_USER`             | Postgres user to connect as                           | Y         |                     |
+| `POSTGRES_PASSWORD_FILE`    | File holding the postgres password                    | Y         |                     |
+| `CLOUD_STORAGE_BUCKET_FILE` | File holding the name of the Cloud Storage bucket     | Y         |                     |
+| `CLOUD_STORAGE_KEY_FILE`    | File holding the key used to access Cloud Storage     | Y         |                     |
+| `BACKUP_CRON_SCHEDULE`      | Cron schedule defining how often to run the backup    | N         | `0 0 * * *` (Daily) |
 
 Generally the `_FILE` variables will point to docker secret paths (e.g. `/run/secrets/postgres_password`).
 
@@ -50,6 +51,10 @@ export db=<db>
 cd /root
 gsutil cp gs://$(cat $CLOUD_STORAGE_BUCKET_FILE)/$file_name
 tar xzvf $file_name
+
+# Mongo
+
+# Postgres
 PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER -c "CREATE DATABASE $db;" # If necessary
-PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER $db < backups/$db.bak
+PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER $db < backups/postgres/$db.bak
 ```

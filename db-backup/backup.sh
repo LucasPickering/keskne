@@ -3,16 +3,23 @@
 set -e
 
 cd /var/lib/postgresql
-mkdir -p backups
+mkdir -p backups/mongo
+mkdir -p backups/postgres
 
 
 password=$(cat $POSTGRES_PASSWORD_FILE)
 bucket=gs://$(cat $CLOUD_STORAGE_BUCKET_FILE)
 
-echo "Starting DB backup at $(date)"
-for db in $DATABASES; do
+echo "Starting Mongo DB backup at $(date)"
+for db in $MONGO_DATABASES; do
     echo "Dumping $db"
-    PGPASSWORD=$password pg_dump $db -h $POSTGRES_HOST -U $POSTGRES_USER -w > backups/${db}.sql
+    mongodump --host=$MONGO_HOST --db=$db --out=backups/mongo/
+done
+
+echo "Starting Postgres DB backup at $(date)"
+for db in $POSTGRES_DATABASES; do
+    echo "Dumping $db"
+    PGPASSWORD=$password pg_dump $db -h $POSTGRES_HOST -U $POSTGRES_USER -w > backups/postgres/${db}.sql
 done
 
 # Check if the bucket has object versioning enabled. If so, we want to use the
