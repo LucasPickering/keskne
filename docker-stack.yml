@@ -3,6 +3,7 @@ version: "3.3"
 volumes:
   keskne-certs:
   keskne-postgres:
+  lpme-static:
   rps-static:
   laulud-db:
   laulud-static:
@@ -59,6 +60,7 @@ services:
     volumes:
       - ${KESKNE_LOGS_DIR}/revproxy:/var/log/nginx:rw
       - keskne-certs:/app/certs:ro
+      - lpme-static:/app/lpme:ro
       - rps-static:/app/rps:ro
       - laulud-static:/app/laulud:ro
     deploy:
@@ -101,6 +103,17 @@ services:
       restart_policy:
         condition: any
         delay: 10s
+
+  # ===== lucaspickering.me =====
+  lpme-static:
+    image: ghcr.io/lucaspickering/lucaspickering.me-static
+    volumes:
+      - lpme-static:/app/lpme:rw
+    # We have to do this to make sure changes in the image get picked up
+    command: sh -c "rm -rf /app/lp.me/* && cp -r /app/static/* /app/lpme"
+    deploy:
+      restart_policy:
+        condition: none
 
   # ===== RPS =====
   rps-redis:
