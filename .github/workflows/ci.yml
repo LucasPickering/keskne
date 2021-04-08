@@ -22,7 +22,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install docker pyyaml
-      - name: Build & push image
-        run: |
-          docker login -u _json_key -p '${{ secrets.GCR_SECRET_KEY }}' gcr.io
-          ./x.py build --push
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push images
+        run: ./x.py build --push

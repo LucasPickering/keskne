@@ -37,7 +37,7 @@ secrets:
 services:
   # ===== Keskne =====
   revproxy:
-    image: gcr.io/keskne-283621/keskne-revproxy:${KESKNE_IMAGE_TAG}
+    image: ghcr.io/lucaspickering/keskne-revproxy:${KESKNE_IMAGE_TAG}
     depends_on:
       - rps-api
       - laulud-api
@@ -67,7 +67,7 @@ services:
         delay: 10s
 
   postgres:
-    image: gcr.io/keskne-283621/keskne-postgres:${KESKNE_IMAGE_TAG}
+    image: ghcr.io/lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
     environment:
       - POSTGRES_USER=root
       - RPS_DB=rps
@@ -82,7 +82,7 @@ services:
         delay: 10s
 
   db-backup:
-    image: gcr.io/keskne-283621/keskne-db-backup:${KESKNE_IMAGE_TAG}
+    image: ghcr.io/lucaspickering/keskne-db-backup:${KESKNE_IMAGE_TAG}
     environment:
       BACKUP_CRON_SCHEDULE: 0 0 * * * # Daily backups
       MONGO_DATABASES: laulud
