@@ -41,6 +41,7 @@ services:
     depends_on:
       - rps-api
       - laulud-api
+      - osrs-hiscore-proxy
     # Need mode:host so the client IP gets logged properly
     ports:
       - target: 80
@@ -53,6 +54,7 @@ services:
       - ROOT_HOSTNAME=${ROOT_HOSTNAME}
       - RPS_HOSTNAME=${RPS_HOSTNAME}
       - LAULUD_HOSTNAME=${LAULUD_HOSTNAME}
+      - OSRS_HISCORE_PROXY_HOSTNAME=${OSRS_HISCORE_PROXY_HOSTNAME}
       - AMPLIFY_API_KEY_FILE=/run/secrets/keskne_revproxy_amplify_api_key
     secrets:
       - keskne_revproxy_amplify_api_key
@@ -152,7 +154,7 @@ services:
     environment:
       RUST_BACKTRACE: 1
       RUST_LOG: info
-      ROCKET_HOSTNAME: https://laulud.lucaspickering.me
+      ROCKET_HOSTNAME: https://${LAULUD_HOSTNAME} # Needed for OAuth
       ROCKET_DATABASE_URL: mongodb://laulud-db:27017/?appname=laulud
     command: /app/laulud-api
     depends_on:
@@ -177,3 +179,16 @@ services:
     deploy:
       restart_policy:
         condition: none
+
+  # ===== OSRS Hiscore Proxy =====
+  osrs-hiscore-proxy:
+    image: ghcr.io/lucaspickering/osrs-hiscore-proxy:latest
+    environment:
+      RUST_BACKTRACE: 1
+      RUST_LOG: info
+      ROCKET_ADDRESS: 0.0.0.0
+    command: /app/osrs-hiscore-proxy
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 10s
