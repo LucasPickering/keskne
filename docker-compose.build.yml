@@ -1,17 +1,9 @@
 version: "3"
 
 services:
-  nginx-amplify:
-    build: https://github.com/nginxinc/docker-nginx-amplify.git
-    image: ghcr.io/lucaspickering/nginx-amplify
-
   revproxy:
     build: ./revproxy
     image: ghcr.io/lucaspickering/keskne-revproxy:${KESKNE_IMAGE_TAG}
-
-  postgres:
-    build: ./postgres
-    image: ghcr.io/lucaspickering/keskne-postgres:${KESKNE_IMAGE_TAG}
 
   db-backup:
     build: ./db-backup

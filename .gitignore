@@ -2,3 +2,6 @@
 *.env.json
 .vscode
 logs/
+helm/charts/
+.terraform/
+*.tfvars

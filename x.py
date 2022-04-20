@@ -242,21 +242,15 @@ class Secrets(Command):
 
 @command("deploy", "Deploy the stack")
 class Deploy(Command):
-    LOG_SUBDIRS = ["revproxy", "rps", "laulud"]
-
     def configure_parser(self, parser):
         parser.add_argument(
-            "--stack-name",
-            "-n",
-            default="keskne",
-            help="The name to use for the stack",
+            "--version-sha",
+            "-s",
+            default=run_cmd(["git", "rev-parse" "origin/master"]),
+            help="Version of the helm chart to deploy"
+            " (defaults to current master SHA)",
         )
-        parser.add_argument(
-            "--stack-config",
-            "-c",
-            default="docker-stack.yml",
-            help="The YAML file that defines the stack to deploy",
-        )
+        # TODO still need this?
         parser.add_argument(
             "--make-logs",
             action="store_true",
