@@ -1,0 +1,11 @@
+# Override default ingress controller so DOKS doesn't create a DO load balancer
+controller:
+  kind: DaemonSet
+  daemonset:
+    useHostPort: true
+  dnsPolicy: ClusterFirstWithHostNet
+  hostNetwork: true
+  service:
+    type: ClusterIP
+rbac:
+  create: true
