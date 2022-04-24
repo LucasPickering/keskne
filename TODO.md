@@ -1,5 +1,3 @@
-- Merge terraforms
-- Update readme again
 - TLS cert
 - Migrate projects
   - beta spray

@@ -1,6 +1,6 @@
 terraform {
   backend "gcs" {
     bucket = "keskne-tfstate"
-    prefix = "keskne/helm"
+    prefix = "keskne"
   }
 }
