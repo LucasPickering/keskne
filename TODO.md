@@ -1,0 +1,6 @@
+- Delete revproxy and postgres folders
+- Update readme
+- Delete old files (docker-compose, docker-stack, x.py)
+- Update CI to build docker files without docker-compose.build.yml
+- Update DB backup to support multiple database instances
+- TLS cert
