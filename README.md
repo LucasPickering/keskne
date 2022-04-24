@@ -1,90 +1,42 @@
 # [Keskne](https://translate.google.com/#view=home&op=translate&sl=et&tl=en&text=keskne)
 
-Reverse proxy server for hosting multiple sites on one instance.
+Reverse proxy server for hosting multiple sites on one Kubernetes cluster.
 
 ## Server Setup
 
-### Docker Machine Setup
+### Requirements
 
-[Set up docker machine on the remote host with this.](https://www.digitalocean.com/community/tutorials/how-to-provision-and-manage-remote-docker-hosts-with-docker-machine-on-ubuntu-16-04#step-3-%E2%80%94-provisioning-a-dockerized-host-using-docker-machine)
+- [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [helm](https://helm.sh/)
+- [doctl](https://github.com/digitalocean/doctl)
 
-This machine will run all the containers on it. Then, you can `docker-machine ssh <name>` for everything below.
+### Deploy Cluster
 
-### Docker Swarm Setup
+The cluster and DNS rules are defined by the Terraform in `terraform/cluster`
 
-On the remote host:
+1. `cd terraform/cluster`
+1. Create a file `terraform.tfvars` and add the following:
 
 ```sh
-docker swarm init
+cloudflare_zone_id = "<cloudflare DNS zone id>"
+cloudflare_email = "<cloudflare login email>"
+cloudflare_api_token = "<cloudflare API token>"
+do_token = "<digitalocean API token>"
 ```
 
-### Generating certs
+1. Run `terraform apply` to stand everything up
 
-This should be set up behind Cloudflare, in which case Cloudflare provides its own certs. We can use a self-signed cert locally and Cloudflare will accept that.
+### Deploy Ingress Pod
 
-```sh
-./x.py gencert
+Each webapp running on the cluster is responsible for defining its own Kubernetes resources, but we need a central Nginx ingress server to allow each app to create its own ingress routing rules. That is managed via Helm+Terraform here, and lives in `terraform/helm`.
+
+1. A kubectl context should've been created for you while deploying the cluster. Find its name with `kubectl config get-contexts` (should be along th elines of `do-nyc1-keskne`)
+   1. If not present, run `doctl kubernetes cluster kubeconfig save keskne`
+1. `kubectl config set-context <context name>`
+1. `cd terraform/helm`
+1. `terraform apply`
+
 ```
 
-Once that is working, you can optionally replace the self-signed cert with a [Cloudflare Origin CA cert](https://support.cloudflare.com/hc/en-us/articles/115000479507#h_30e5cf09-6e98-48e1-a9f1-427486829feb), then set the SSL/TLS mode in Cloudflare to "Full (Strict)".
-
-### Adding Secrets
-
-All the secrets are managed through Docker secrets. You can look at `docker-stack.yml` for the list of secrets you need to populate, or use `x.py` to do it:
-
-```sh
-./x.py secrets
-```
-
-Make sure to clean out your shell history after running those.
-
-### Database Backup/Restore
-
-Certain DBs under postgres get backed up automatically. For more info, read `postgres-backup/README.md`. To add another DB to the backup list, see `postgres/backup.sh`.
-
-To restore the DB, shell into the `postgres-backup` container, and run:
-
-```sh
-gsutil cp gs://<bucket>/<backup file> .
-tar xzvf <backup file>
-PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER -c "CREATE DATABASE gdlk;" # If necessary
-PGPASSWORD=$(cat $POSTGRES_PASSWORD_FILE) psql -h $POSTGRES_HOST -U $POSTGRES_USER gdlk < backups/gdlk.bak<db>.bak
-```
-
-## Updating
-
-### Keskne
-
-`keskne-revproxy` is built from the official nginx-amplify image. Unfortunately there's no official Docker repository for that image, so we have to build it ourselves from the git repo. If you change any configuration and need to rebuild a core image:
-
-```sh
-./x.py build --push [service] ... # If no services are specified, it rebuilds/pushes all
-```
-
-### Updating Services
-
-Before running these steps, you should set your server as the active docker machine.
-
-To pull in updates for all services, run:
-
-```sh
-./x.py deploy
-```
-
-## Development
-
-Keskne can be run in development with minor setup. First:
-
-```sh
-cp env.json dev.env.json
-```
-
-Then edit `dev.env.json` to change `KESKNE_IMAGE_TAG`, `KESKNE_LOGS_DIR`, and the hostnames. You may have to edit `/etc/hosts` to add domains that point to `127.0.0.1`. Then:
-
-```sh
-docker swarm init
-./x.py -e dev.env.json build
-./x.py -e dev.env.json gencert
-./x.py -e dev.env.json secrets --placeholder
-./x.py -e dev.env.json deploy --make-logs
 ```
