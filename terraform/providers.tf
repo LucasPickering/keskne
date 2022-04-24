@@ -22,3 +22,11 @@ provider "cloudflare" {
 provider "digitalocean" {
   token = var.do_token
 }
+
+provider "helm" {
+  kubernetes {
+    config_path = pathexpand(var.kube_config_path)
+    # This context should be created by doctl after the cluster stands up
+    config_context = "do-${var.do_region}-${digitalocean_kubernetes_cluster.main.name}"
+  }
+}

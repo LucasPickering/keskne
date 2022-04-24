@@ -13,9 +13,9 @@ Reverse proxy server for hosting multiple sites on one Kubernetes cluster.
 
 ### Deploy Cluster
 
-The cluster and DNS rules are defined by the Terraform in `terraform/cluster`
+The cluster, DNS rules, and Kubernetes ingress pod are defined by the Terraform in `./terraform/`
 
-1. `cd terraform/cluster`
+1. `cd terraform`
 1. Create a file `terraform.tfvars` and add the following:
 
 ```sh
@@ -27,16 +27,12 @@ do_token = "<digitalocean API token>"
 
 1. Run `terraform apply` to stand everything up
 
-### Deploy Ingress Pod
+### Kubectl Context
 
-Each webapp running on the cluster is responsible for defining its own Kubernetes resources, but we need a central Nginx ingress server to allow each app to create its own ingress routing rules. That is managed via Helm+Terraform here, and lives in `terraform/helm`.
+The deployment Terraform will create a `kubectl` context called `keskne`. It won't select the context though, so you'll have to run `kubectl config set-context keskne` to run any `kubectl` commands against the cluster.
 
-1. A kubectl context should've been created for you while deploying the cluster. Find its name with `kubectl config get-contexts` (should be along th elines of `do-nyc1-keskne`)
-   1. If not present, run `doctl kubernetes cluster kubeconfig save keskne`
-1. `kubectl config set-context <context name>`
-1. `cd terraform/helm`
-1. `terraform apply`
+If you need to access the cluster but didn't run the Terraform originally, you can create the context manually with the `doctl` tool (requires login first):
 
-```
-
+```sh
+doctl kubernetes cluster kubeconfig save keskne --context keskne
 ```

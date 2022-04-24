@@ -18,7 +18,7 @@ resource "digitalocean_kubernetes_cluster" "main" {
   # Create kubectl context for this cluster
   # TODO delete this on teardown
   provisioner "local-exec" {
-    command = "doctl kubernetes cluster kubeconfig save ${self.name}"
+    command = "doctl kubernetes cluster kubeconfig save ${self.name} --set-current-context=false"
   }
 }
 
