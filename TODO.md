@@ -1,6 +1,4 @@
-- TLS cert
 - Migrate projects
-  - beta spray
   - laulud
   - rps
 - Update DB backup to support multiple database instances

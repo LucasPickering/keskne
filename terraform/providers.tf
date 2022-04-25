@@ -15,8 +15,8 @@ terraform {
 }
 
 provider "cloudflare" {
-  email     = var.cloudflare_email
-  api_token = var.cloudflare_api_token
+  api_token            = var.cloudflare_api_token
+  api_user_service_key = var.cloudflare_origin_ca_key
 }
 
 provider "digitalocean" {
@@ -29,4 +29,10 @@ provider "helm" {
     # This context should be created by doctl after the cluster stands up
     config_context = "do-${var.do_region}-${digitalocean_kubernetes_cluster.main.name}"
   }
+}
+
+provider "kubernetes" {
+  config_path = pathexpand(var.kube_config_path)
+  # This context should be created by doctl after the cluster stands up
+  config_context = "do-${var.do_region}-${digitalocean_kubernetes_cluster.main.name}"
 }

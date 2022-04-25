@@ -1,3 +1,7 @@
+locals {
+  ssl_certificate_secret_name = "ssl-certificate"
+}
+
 # Deploy the nginx ingress chart, so that individual webapps can define ingress
 # rules for their own routing
 resource "helm_release" "ingress_nginx" {
@@ -11,6 +15,10 @@ resource "helm_release" "ingress_nginx" {
   values = [
     file("./values-ingress.yaml")
   ]
+  set {
+    name  = "controller.extraArgs.default-ssl-certificate"
+    value = "${var.kube_namespace}/${local.ssl_certificate_secret_name}"
+  }
 }
 
 resource "helm_release" "metrics_server" {
@@ -20,4 +28,18 @@ resource "helm_release" "metrics_server" {
   version          = "3.8.2"
   namespace        = var.kube_namespace
   create_namespace = true
+}
+
+resource "kubernetes_secret" "ssl_certificate" {
+  metadata {
+    name      = local.ssl_certificate_secret_name
+    namespace = var.kube_namespace
+  }
+
+  data = {
+    "tls.crt" = cloudflare_origin_ca_certificate.main.certificate
+    "tls.key" = tls_private_key.main.private_key_pem
+  }
+
+  type = "kubernetes.io/tls"
 }

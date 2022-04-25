@@ -3,14 +3,15 @@ variable "cloudflare_api_token" {
   description = "Cloudflare API token"
 }
 
-variable "cloudflare_email" {
+variable "cloudflare_origin_ca_key" {
   type        = string
-  description = "Cloudflare login email"
+  description = "Cloudflare Origin CA key (different from API token)"
 }
 
-variable "cloudflare_zone_id" {
+variable "cloudflare_zone" {
   type        = string
-  description = "Cloudflare DNS zone ID"
+  description = "Cloudflare DNS zone name"
+  default     = "lucaspickering.me"
 }
 
 variable "do_region" {

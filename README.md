@@ -19,11 +19,12 @@ The cluster, DNS rules, and Kubernetes ingress pod are defined by the Terraform 
 1. Create a file `terraform.tfvars` and add the following:
 
 ```sh
-cloudflare_zone_id = "<cloudflare DNS zone id>"
-cloudflare_email = "<cloudflare login email>"
 cloudflare_api_token = "<cloudflare API token>"
+cloudflare_origin_ca_key = "<cloudflare origin CA key>"
 do_token = "<digitalocean API token>"
 ```
+
+Cloudflare token/key comes from https://dash.cloudflare.com/profile/api-tokens
 
 1. Run `terraform apply` to stand everything up
 
