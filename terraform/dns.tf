@@ -6,15 +6,6 @@ data "cloudflare_zone" "main" {
   name = var.cloudflare_zone
 }
 
-resource "cloudflare_record" "beta_spray" {
-  zone_id = data.cloudflare_zone.main.id
-  name    = "betaspray"
-  value   = local.kube_ip
-  type    = "A"
-  ttl     = 1
-  proxied = true
-}
-
 resource "cloudflare_record" "laulud" {
   zone_id = data.cloudflare_zone.main.id
   name    = "laulud"

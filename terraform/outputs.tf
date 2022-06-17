@@ -1,8 +1,3 @@
-output "beta_spray_hostname" {
-  description = "Beta Spray FQDN"
-  value       = cloudflare_record.beta_spray.hostname
-}
-
 output "cluster_name" {
   description = "Kubernetes cluster name"
   value       = digitalocean_kubernetes_cluster.main.name
