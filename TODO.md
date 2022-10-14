@@ -1,4 +1,0 @@
-- Migrate projects
-  - laulud
-  - rps
-- Update DB backup to support multiple database instances

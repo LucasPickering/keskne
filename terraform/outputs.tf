@@ -27,8 +27,3 @@ output "public_ip" {
   description = "Kubernetes cluster public application IP"
   value       = data.digitalocean_droplet.worker_node.ipv4_address
 }
-
-output "rps_hostname" {
-  description = "RPS FQDN"
-  value       = cloudflare_record.rps.hostname
-}

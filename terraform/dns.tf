@@ -23,12 +23,3 @@ resource "cloudflare_record" "osrs_hiscore" {
   ttl     = 1
   proxied = true
 }
-
-resource "cloudflare_record" "rps" {
-  zone_id = data.cloudflare_zone.main.id
-  name    = "rps"
-  value   = local.kube_ip
-  type    = "A"
-  ttl     = 1
-  proxied = true
-}
