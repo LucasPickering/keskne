@@ -12,6 +12,7 @@ resource "tls_cert_request" "main" {
 }
 
 resource "cloudflare_origin_ca_certificate" "main" {
+  provider           = cloudflare.api_user_service_key
   csr                = tls_cert_request.main.cert_request_pem
   hostnames          = [var.cloudflare_zone, "*.${var.cloudflare_zone}"]
   request_type       = "origin-rsa"

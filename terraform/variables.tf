@@ -36,3 +36,9 @@ variable "kube_namespace" {
   description = "Kubernetes namespace to deploy root Keskne pods into"
   default     = "keskne"
 }
+
+variable "kube_version" {
+  type        = string
+  description = "Kubernetes cluster version in DigitalOcean. Grab the latest from `doctl kubernetes options versions`"
+  default     = "1.25.4-do.0"
+}

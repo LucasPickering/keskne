@@ -4,10 +4,9 @@ locals {
 }
 
 resource "digitalocean_kubernetes_cluster" "main" {
-  name   = "keskne"
-  region = "nyc1"
-  # Grab the latest version slug from `doctl kubernetes options versions`
-  version = "1.22.8-do.1"
+  name    = "keskne"
+  region  = "nyc1"
+  version = var.kube_version
 
   node_pool {
     name       = "worker-pool"
