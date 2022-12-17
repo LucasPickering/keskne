@@ -7,10 +7,11 @@ resource "digitalocean_kubernetes_cluster" "main" {
   name    = "keskne"
   region  = "nyc1"
   version = var.kube_version
+  ha      = false
 
   node_pool {
     name       = "worker-pool"
-    size       = "s-1vcpu-2gb"
+    size       = "s-2vcpu-2gb"
     node_count = 1
   }
 
