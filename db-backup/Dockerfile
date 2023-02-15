@@ -1,7 +1,7 @@
+# TODO get a much smaller docker image
 FROM google/cloud-sdk:alpine
 
-RUN apk add --no-cache mongodb-tools postgresql
-COPY backup.sh entrypoint.sh /app/
+RUN apk add --no-cache mongodb-tools postgresql-client
+COPY backup.sh /app/
 
-ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["crond", "-f"]
+CMD ["/app/backup.sh"]

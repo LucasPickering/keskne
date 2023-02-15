@@ -6,18 +6,19 @@ This is an image to periodically back up databases from a Mongo instance and/or 
 
 Backup can be configured through a few env variables:
 
-| Variable                    | Purpose                                               | Required? | Default             |
-| --------------------------- | ----------------------------------------------------- | --------- | ------------------- |
-| `MONGO_DATABASES`           | Space-separated list of Mongo databases to back up    | Y         |                     |
-| `POSTGRES_DATABASES`        | Space-separated list of Postgres databases to back up | Y         |                     |
-| `POSTGRES_HOST`             | Postgres URL of the DB host to connect to             | Y         |                     |
-| `POSTGRES_USER`             | Postgres user to connect as                           | Y         |                     |
-| `POSTGRES_PASSWORD_FILE`    | File holding the postgres password                    | Y         |                     |
-| `CLOUD_STORAGE_BUCKET_FILE` | File holding the name of the Cloud Storage bucket     | Y         |                     |
-| `CLOUD_STORAGE_KEY_FILE`    | File holding the key used to access Cloud Storage     | Y         |                     |
-| `BACKUP_CRON_SCHEDULE`      | Cron schedule defining how often to run the backup    | N         | `0 0 * * *` (Daily) |
+| Variable                 | Purpose                                             | Required? |
+| ------------------------ | --------------------------------------------------- | --------- |
+| `DATABASE_TYPE`          | `mongo` or `postgres`                               | Y         |
+| `DATABASE_HOST`          | Hostname for the database server                    | Y         |
+| `DATABASE_PORT`          | Port for the database server                        | N         |
+| `DATABASE_NAME`          | Name of the database within the instance to back up | Y         |
+| `DATABASE_USER`          | User to connect to the database as                  | N         |
+| `DATABASE_PASSWORD_FILE` | File holding the database password                  | N         |
+| `CLOUD_STORAGE_BUCKET`   | Cloud Storage bucket to save backups to             | Y         |
+| `CLOUD_STORAGE_PREFIX`   | Prefix within the bucket to save backups to         | N         |
+| `CLOUD_STORAGE_KEY_FILE` | File holding the key used to access Cloud Storage   | Y         |
 
-Generally the `_FILE` variables will point to docker secret paths (e.g. `/run/secrets/postgres_password`).
+TODO fix up docs
 
 ## Setting up Google Cloud
 

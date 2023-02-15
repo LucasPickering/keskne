@@ -2,35 +2,66 @@
 
 set -e
 
-cd /var/lib/postgresql
-mkdir -p backups/mongo
-mkdir -p backups/postgres
+backup_dir=/app/backups
+now=$(date -Iseconds)
+mkdir -p $backup_dir
 
+back_up_mongo () {
+    # We'll need this outside the function
+    backup_file=${backup_dir}/${db}.sql # TODO fix this
 
-password=$(cat $POSTGRES_PASSWORD_FILE)
-bucket=gs://$(cat $CLOUD_STORAGE_BUCKET_FILE)
+    local db=${DATABASE_NAME}
+    local host=${DATABASE_HOST}
+    local port=${DATABASE_PORT:-27017}
 
-echo "Starting Mongo DB backup at $(date)"
-for db in $MONGO_DATABASES; do
-    echo "Dumping $db"
-    mongodump --host=$MONGO_HOST --db=$db --out=backups/mongo/
-done
+    echo "Dumping $db from $host:$port (mongo) at $now to $backup_dir"
+    # TODO pass username/password
+    mongodump --host=$host:$port --db=$db --out=$backup_dir
+}
 
-echo "Starting Postgres DB backup at $(date)"
-for db in $POSTGRES_DATABASES; do
-    echo "Dumping $db"
-    PGPASSWORD=$password pg_dump $db -h $POSTGRES_HOST -U $POSTGRES_USER -w > backups/postgres/${db}.sql
-done
+back_up_postgres () {
+    local db=${DATABASE_NAME}
+    local host=${DATABASE_HOST}
+    local port=${DATABASE_PORT:-5432}
+    local username=${DATABASE_USER}
+    local password=$(cat $DATABASE_PASSWORD_FILE)
 
-# Check if the bucket has object versioning enabled. If so, we want to use the
-# same file name on every backup. If not, we want to include the date for our
-# own versioning system.
-if gsutil versioning get $bucket | grep -iq enabled; then
-    # versioning is enabled on the bucket
-    file_name=backups.tar.gz
-else
-    file_name=backups-$(date -u +"%Y-%m-%dT%H:%M:%SZ").tar.gz
-fi
-echo "Packaging and uploading $file_name"
-tar czvf "$file_name" backups/
-gsutil cp "$file_name" $bucket
+    # We'll need this outside the function
+    backup_file=${backup_dir}/${db}.sql
+
+    echo "Dumping $db from $host:$port (postgres) at $now to $backup_file"
+    PGPASSWORD=$password pg_dump $db --host $host --port $port \
+        --username $username --no-password \
+        --file $backup_file --data-only
+}
+
+upload_backup () {
+    local bucket=gs://$CLOUD_STORAGE_BUCKET
+    local bucket_path=$bucket/$CLOUD_STORAGE_PREFIX
+
+    gcloud auth activate-service-account --key-file=$CLOUD_STORAGE_KEY_FILE
+
+    # Print a warning if the bucket doesn't have versioning enabled
+    if gsutil versioning get $bucket | grep -iq disabled; then
+        echo "WARNING: $bucket does not have object versioning enabled. \
+            Previous backup will be overwritten"
+    fi
+
+    echo "Uploading $backup_file to $bucket_path"
+    gsutil cp "$backup_file" "$bucket_path"
+    rm "$backup_file"
+}
+
+case $DATABASE_TYPE in
+    "mongo")
+        back_up_mongo
+        ;;
+    "postgres")
+        back_up_postgres
+        ;;
+    *)
+        echo "Unknown database type: $DATABASE_TYPE; Supported values are: mongo, postgres"
+        exit 1
+        ;;
+esac
+upload_backup
