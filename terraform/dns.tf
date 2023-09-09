@@ -1,5 +1,5 @@
 locals {
-  kube_ip = data.digitalocean_droplet.worker_node.ipv4_address
+  kube_ip = data.google_compute_instance.worker_node.network_interface[0].access_config[0].nat_ip
 }
 
 data "cloudflare_zone" "main" {

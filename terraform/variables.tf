@@ -14,31 +14,30 @@ variable "cloudflare_zone" {
   default     = "lucaspickering.me"
 }
 
-variable "do_region" {
+variable "gcp_project_id" {
+  description = "GCP project id"
+  default     = "keskne-347510"
   type        = string
-  description = "DigitalOcean region"
-  default     = "nyc1"
 }
 
-variable "do_token" {
+variable "gcp_region" {
+  # Always Free for storage isn't available in east4
+  # https://cloud.google.com/storage/pricing#cloud-storage-always-free
+  description = "GCP region"
+  default     = "us-east1"
   type        = string
-  description = "DigitalOcean auth token"
 }
 
-variable "kube_config_path" {
+variable "gcp_zone" {
+  # GKE control plane is only free for Zonal Clusters
+  # https://cloud.google.com/kubernetes-engine/pricing#standard_mode
+  description = "GCP zone"
+  default     = "us-east1-c"
   type        = string
-  description = "Path to kubectl config file"
-  default     = "~/.kube/config"
 }
 
 variable "kube_namespace" {
   type        = string
   description = "Kubernetes namespace to deploy root Keskne pods into"
   default     = "keskne"
-}
-
-variable "kube_version" {
-  type        = string
-  description = "Kubernetes cluster version in DigitalOcean. Grab the latest from `doctl kubernetes options versions`"
-  default     = "1.25.4-do.0"
 }

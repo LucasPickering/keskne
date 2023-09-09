@@ -1,4 +1,4 @@
-# Override default ingress controller so DOKS doesn't create a DO load balancer
+# Override default ingress controller so GCP doesn't create a load balancer
 controller:
   kind: DaemonSet
   daemonset:

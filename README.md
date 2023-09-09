@@ -7,9 +7,10 @@ Reverse proxy server for hosting multiple sites on one Kubernetes cluster.
 ### Requirements
 
 - [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+- [gcloud](https://cloud.google.com/sdk/docs/install)
+  - Make sure login/authentication is complete
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [helm](https://helm.sh/)
-- [doctl](https://github.com/digitalocean/doctl)
 
 ### Deploy Cluster
 
@@ -21,7 +22,6 @@ The cluster, DNS rules, and Kubernetes ingress pod are defined by the Terraform 
 ```sh
 cloudflare_api_token = "<cloudflare API token>"
 cloudflare_origin_ca_key = "<cloudflare origin CA key>"
-do_token = "<digitalocean API token>"
 ```
 
 Cloudflare token/key comes from https://dash.cloudflare.com/profile/api-tokens
@@ -30,10 +30,23 @@ Cloudflare token/key comes from https://dash.cloudflare.com/profile/api-tokens
 
 ### Kubectl Context
 
-The deployment Terraform will create a `kubectl` context called `keskne`. It won't select the context though, so you'll have to run `kubectl config set-context keskne` to run any `kubectl` commands against the cluster.
+The deployment will **not** create a kubectl context for you. To access the cluster locally, run:
 
-If you need to access the cluster but didn't run the Terraform originally, you can create the context manually with the `doctl` tool (requires login first):
+```
+gcloud container clusters get-credentials $(terraform output -raw cluster_name) --region $(terraform output -raw gcp_zone)
+```
 
-```sh
-doctl kubernetes cluster kubeconfig save keskne --context keskne
+## Troubleshooting
+
+If you get this error when making Terraform changes:
+
+```
+Error: Get "http://localhost/api/v1/namespaces/keskne": dial tcp [::1]:80: connect: connection refused
+```
+
+You're probably making changes to the cluster and the Kubernetes provider is stupid and can't tear down what it needs to. Just manually unlink whatever Kubernetes/Helm resources it's complaining about with:
+
+```
+terraform list
+terraform state rm <resource>
 ```

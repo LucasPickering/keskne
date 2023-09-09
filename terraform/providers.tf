@@ -6,9 +6,9 @@ terraform {
       configuration_aliases = [cloudflare.api_user_service_key]
     }
 
-    digitalocean = {
-      source  = "digitalocean/digitalocean"
-      version = "~> 2.0"
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 4.0"
     }
   }
 
@@ -28,21 +28,28 @@ provider "cloudflare" {
   api_user_service_key = var.cloudflare_origin_ca_key
 }
 
+provider "google" {
+  project = var.gcp_project_id
+  region  = var.gcp_region
+}
 
-provider "digitalocean" {
-  token = var.do_token
+data "google_client_config" "main" {
+}
+
+provider "kubernetes" {
+  host  = "https://${google_container_cluster.main.endpoint}"
+  token = data.google_client_config.main.access_token
+  cluster_ca_certificate = base64decode(
+    google_container_cluster.main.master_auth[0].cluster_ca_certificate,
+  )
 }
 
 provider "helm" {
   kubernetes {
-    config_path = pathexpand(var.kube_config_path)
-    # This context should be created by doctl after the cluster stands up
-    config_context = "do-${var.do_region}-${digitalocean_kubernetes_cluster.main.name}"
+    host  = "https://${google_container_cluster.main.endpoint}"
+    token = data.google_client_config.main.access_token
+    cluster_ca_certificate = base64decode(
+      google_container_cluster.main.master_auth[0].cluster_ca_certificate,
+    )
   }
-}
-
-provider "kubernetes" {
-  config_path = pathexpand(var.kube_config_path)
-  # This context should be created by doctl after the cluster stands up
-  config_context = "do-${var.do_region}-${digitalocean_kubernetes_cluster.main.name}"
 }

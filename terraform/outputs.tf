@@ -1,11 +1,21 @@
 output "cluster_name" {
   description = "Kubernetes cluster name"
-  value       = digitalocean_kubernetes_cluster.main.name
+  value       = google_container_cluster.main.name
 }
 
 output "cluster_ip" {
   description = "Kubernetes cluster management IP"
-  value       = digitalocean_kubernetes_cluster.main.ipv4_address
+  value       = google_container_cluster.main.endpoint
+}
+
+output "gcp_region" {
+  description = "GCP region name"
+  value       = var.gcp_region
+}
+
+output "gcp_zone" {
+  description = "GCP zone name"
+  value       = var.gcp_zone
 }
 
 output "laulud_hostname" {
@@ -18,12 +28,8 @@ output "osrs_hiscore_hostname" {
   value       = cloudflare_record.osrs_hiscore.hostname
 }
 
-output "project_name" {
-  description = "Digitalocean project name"
-  value       = digitalocean_project.keskne.name
-}
-
 output "public_ip" {
+  # The expression to grab the IP is long so re-use from DNS
   description = "Kubernetes cluster public application IP"
-  value       = data.digitalocean_droplet.worker_node.ipv4_address
+  value       = cloudflare_record.laulud.value
 }
