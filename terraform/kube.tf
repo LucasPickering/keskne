@@ -39,7 +39,7 @@ resource "google_container_node_pool" "main" {
       env = var.gcp_project_id
     }
 
-    preemptible  = true
+    preemptible  = false           # We need a stable IP
     machine_type = "n1-standard-1" # TODO adjust this?
     tags         = ["gke-node", "${var.gcp_project_id}-gke"]
     metadata = {
